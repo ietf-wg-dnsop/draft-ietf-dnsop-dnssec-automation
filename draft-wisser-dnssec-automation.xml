@@ -7,8 +7,6 @@
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
-<!-- For a complete list and description of processing instructions (PIs),
-    please see http://xml.resource.org/authoring/README.html. -->
 <rfc
       category="std"
       docName="draft-wisser-dnssec-automation-00"
@@ -60,6 +58,16 @@
 <middle>
     <section numbered="true" toc="default">
         <name>Introduction</name>
+        <t>
+            <xref target="RFC8901" /> describes the neccessary steps and API for a multi-signer
+            DNSSEC configuration. In this document we will combine <xref target="RFC8901" /> with
+            <xref target="RFC8078" /> and <xref target="RFC7477" /> to define a fully
+            automatable algorithm for setting up, operating and decomissioning of a multi-signer
+            DNSSEC configuration.
+        </t>
+        <t>
+            On of the corner cases of multi-signer DNSSEC is actually the secure change of DNS operator.
+        </t>
         <section numbered="true" toc="default">
             <name>What this document doesn't describe</name>
             <t>
@@ -76,34 +84,87 @@
                 document are to be interpreted as described in <xref target="RFC2119" format="default">RFC 2119</xref>.</t>
             </section>
         </section>
+    <section numbered="true" toc="default">
+        <name>Use Cases</name>
+        <section numbered="true" toc="default">
+            <name>Running a multi-signer setup</name>
+            <t>
+                As described in <xref target="RFC8901" /> a multi-signer DNSSEC configuration
+                has some challenges that can be overcome with the right infrastructure and
+                following a number of steps for setup and operation.
+            </t>
+            <t>
+                In this document we describe how all of the steps in the multi-signer DNSSEC setup
+                can be automated. That is, all except the initial trust between involded signers.
+            </t>
+        </section>
+        <section numbered="true" toc="default">
+            <name>Secure change of name server operator</name>
+            <t>
+                Changing the name server operator of a DNSSEC signed zone can be quite a challenge.
+                Currently the most used algorithm is "going insecure". This is a bad choice for security.
+                And a bad choice for users relying on the security of the zone.
+            </t>
+            <t>
+                Changing name server operators is an edge case of multi-signer DNSSEC operations.
+                It simply comes down to the new operator joins the old operator in a multi-signer setup.
+                And once that is completed the old operator leaves the multi-signer setup.
+            </t>
+        </section>
+    </section>
     <section anchor="algo" numbered="true" toc="default">
         <name>Algorithm</name>
         <section numbered="true" toc="default">
-            <name>Prerequisites</name>
+            <name>Setting up a new multi-signer group</name>
+            <t>
+                The zone is already authoritatively served by one DNS operator and is DNSSEC signed.
+                For full automation both the KSK and ZSK or CSK must be online.
+            </t>
+            <t>
+                This would be an edge case, a multi-signer group with only one member.
+            </t>
+        </section>
+        <section numbered="true" toc="default">
+            <name>Configuration</name>
+            <t>
+                The following configrations have to be made for any member of the multi-signer group before joining the group.
+                These steps are not automated by this draft.
+            </t>
             <ol>
-                <li>All future members of the multi-signer group need to have a working setup of the zone, including DNSSEC signing.</li>
-                <li>All future members of the multi-signer group use the same algorithm for DNSSEC signing.</li>
-                <li>One future member of the multi-signer group is currently authoritative answering for the zone.</li>
+                <li>The signers own keys (probably the keys the member has the private part of)</li>
+                <li>The NS records in the zone that get update from the signer.</li>
+                <li>An established trust to the multi-signer group</li>
             </ol>
         </section>
         <section numbered="true" toc="default">
             <name>A new member joins the multi-signer group</name>
-            <ol spacing="normal">
-                <li>a new member joins the group</li>
-                <li>Exchange of keys, after this step all members must have the dnskey set of all other members of the group</li>
-                <li>Calculate CDS/CDNSKEY set</li>
-                <li>All members put the ZSK of all other members in their DNSKEY set.</li>
-                <li>All members publish their CDS/CDNSKEY set</li>
-                <li>Wait for parent to pick up DS updates</li>
-                <li>Remove CDS/CDNSKEY set from all members</li>
-                <li>Wait 2 time maximum TTL of DS at parent and DNSKEY att all children</li>
-                <li>Exchange of NS set, after this step all members must have the ns set of all other members</li>
-                <li>Compile new complete NS set with NS records from all members</li>
-                <li>Compare to NS set at parent</li>
-                <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
-                <li>Wait for parent to pick up changes</li>
-                <li>Remove CSYNC record from all members</li>
-            </ol>
+            <section numbered="true" toc="default">
+                <name>Prerequisites</name>
+                <t>The future member of the multi-signer group</t>
+                <ol>
+                    <li>has a working setup of the zone, including DNSSEC signing.</li>
+                    <li>uses the same algorithm for DNSSEC signing as the multi-signer goup uses.</li>
+                </ol>
+            </section>
+            <section numbered="true" toc="default">
+                <name>Steps for joining</name>
+                <ol spacing="normal">
+                    <li>a new member joins the group</li>
+                    <li>Exchange of keys, after this step all members must have the dnskey set of all other members of the group</li>
+                    <li>Calculate CDS/CDNSKEY set</li>
+                    <li>All members put the ZSK of all other members in their DNSKEY set.</li>
+                    <li>All members publish their CDS/CDNSKEY set</li>
+                    <li>Wait for parent to pick up DS updates</li>
+                    <li>Remove CDS/CDNSKEY set from all members</li>
+                    <li>Wait 2 time maximum TTL of DS at parent and DNSKEY att all children</li>
+                    <li>Exchange of NS set, after this step all members must have the ns set of all other members</li>
+                    <li>Compile new complete NS set with NS records from all members</li>
+                    <li>Compare to NS set at parent</li>
+                    <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
+                    <li>Wait for parent to pick up changes</li>
+                    <li>Remove CSYNC record from all members</li>
+                </ol>
+            </section>
         </section>
         <section numbered="true" toc="default">
             <name>A member leaves the multi-signer group</name>
@@ -149,12 +210,9 @@
 	<section title="Change History">
 		<section title="Change from 00 to 01" anchor="change-00-to-01">
 				<ol>
-					<li>Corrected information for the &lt;create/&gt; command.</li>
-					<li>Minor fixes in wording.</li>
-					<li>Introduces resData element.</li>
+					<li>Nothing yet</li>
 				</ol>
 		</section>
 	</section>
-
 </back>
 </rfc>
