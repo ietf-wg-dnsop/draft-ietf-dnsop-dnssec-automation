@@ -66,15 +66,27 @@
             DNSSEC configuration.
         </t>
         <t>
-            On of the corner cases of multi-signer DNSSEC is actually the secure change of DNS operator.
+            One of the corner cases of multi-signer DNSSEC is actually the secure change of DNS operator.
         </t>
         <section numbered="true" toc="default">
-            <name>What this document doesn't describe</name>
+            <name>Out-Of-Scope</name>
             <t>
                 In order for any multi-signer group to give consitent answers over all instances
                 the contents of the zone have to be synchronized. The content synchronization is
                 out-of-scope for this document.
             </t>
+        </section>
+        <section numbered="true" toc="default">
+            <name>Notation</name>
+            <t>
+                Short definitions of expressions used in this document
+            </t>
+            <dl>
+                <dt>signer</dt>
+                <dd>An entity signing a zone</dd>
+                <dt>multi-signer group</dt>
+                <dd>A group of signers that sign the same zone</dd>
+            </dl>
         </section>
         <section numbered="true" toc="default">
             <name>Requirements Language</name>
@@ -121,26 +133,26 @@
                 For full automation both the KSK and ZSK or CSK must be online.
             </t>
             <t>
-                This would be an edge case, a multi-signer group with only one member.
+                This would be an edge case, a multi-signer group with only one signer.
             </t>
         </section>
         <section numbered="true" toc="default">
             <name>Configuration</name>
             <t>
-                The following configrations have to be made for any member of the multi-signer group before joining the group.
+                The following configrations have to be made for any signer of the multi-signer group before joining the group.
                 These steps are not automated by this draft.
             </t>
             <ol>
-                <li>The signers own keys (probably the keys the member has the private part of)</li>
+                <li>The signers own keys (probably the keys the signer has the private part of)</li>
                 <li>The NS records in the zone that get update from the signer.</li>
                 <li>An established trust to the multi-signer group</li>
             </ol>
         </section>
         <section numbered="true" toc="default">
-            <name>A new member joins the multi-signer group</name>
+            <name>A new signer joins the multi-signer group</name>
             <section numbered="true" toc="default">
                 <name>Prerequisites</name>
-                <t>The future member of the multi-signer group</t>
+                <t>The new signer</t>
                 <ol>
                     <li>has a working setup of the zone, including DNSSEC signing.</li>
                     <li>uses the same algorithm for DNSSEC signing as the multi-signer goup uses.</li>
@@ -149,42 +161,42 @@
             <section numbered="true" toc="default">
                 <name>Steps for joining</name>
                 <ol spacing="normal">
-                    <li>a new member joins the group</li>
-                    <li>Exchange of keys, after this step all members must have the dnskey set of all other members of the group</li>
+                    <li>a new signer joins the group</li>
+                    <li>Exchange of keys, after this step all signers must have the dnskey set of all other signers of the group</li>
                     <li>Calculate CDS/CDNSKEY set</li>
-                    <li>All members put the ZSK of all other members in their DNSKEY set.</li>
-                    <li>All members publish their CDS/CDNSKEY set</li>
+                    <li>All signers put the ZSK of all other signers in their DNSKEY set.</li>
+                    <li>All signers publish their CDS/CDNSKEY set</li>
                     <li>Wait for parent to pick up DS updates</li>
-                    <li>Remove CDS/CDNSKEY set from all members</li>
-                    <li>Wait 2 time maximum TTL of DS at parent and DNSKEY att all children</li>
-                    <li>Exchange of NS set, after this step all members must have the ns set of all other members</li>
-                    <li>Compile new complete NS set with NS records from all members</li>
+                    <li>Remove CDS/CDNSKEY set from all signers</li>
+                    <li>Wait 2 time maximum TTL of DS at parent and DNSKEY at all children</li>
+                    <li>Exchange of NS set, after this step all signers must have the ns set of all other signers</li>
+                    <li>Compile new complete NS set with NS records from all signers</li>
                     <li>Compare to NS set at parent</li>
                     <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
                     <li>Wait for parent to pick up changes</li>
-                    <li>Remove CSYNC record from all members</li>
+                    <li>Remove CSYNC record from all signers</li>
                 </ol>
             </section>
         </section>
         <section numbered="true" toc="default">
-            <name>A member leaves the multi-signer group</name>
+            <name>A signer leaves the multi-signer group</name>
             <ol spacing="normal">
-                <li>Signal to all other members an empty NS set</li>
-                <li>Compile new complete NS set with NS records from all members</li>
+                <li>Signal to all other signers to remove the leaving signes NS records</li>
+                <li>Compile new complete NS set with NS records from all signers</li>
                 <li>Compare to NS set at parent</li>
                 <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
                 <li>Wait for parent to pick up changes</li>
-                <li>Remove CSYNC record from all members</li>
-                <li>Wait 2 times TTL of maximum NS TTL from parent and all members</li>
-                <li>Signal all other members leaving of multi-signer group</li>
+                <li>Remove CSYNC record from all signers</li>
+                <li>Wait 2 times TTL of maximum NS TTL from parent and all signers</li>
+                <li>Signal all other signers leaving of multi-signer group</li>
                 <li>Stop answering queries</li>
-                <li>Remaining members remove ZSK of leaving member from their DNSKEY set</li>
-                <li>Remaining members recalculat DNSKEY set</li>
+                <li>Remaining signers remove ZSK of leaving signer from their DNSKEY set</li>
+                <li>Remaining signers recalculat DNSKEY set</li>
                 <li>Calculate CDS/CDNSKEY set</li>
-                <li>All members put the ZSK of all other members in their DNSKEY set.</li>
-                <li>All members publish their CDS/CDNSKEY set</li>
+                <li>All signers put the ZSK of all other signers in their DNSKEY set.</li>
+                <li>All signers publish their CDS/CDNSKEY set</li>
                 <li>Wait for parent to pick up DS updates</li>
-                <li>Remove CDS/CDNSKEY set from all members</li>
+                <li>Remove CDS/CDNSKEY set from all signers</li>
             </ol>
         </section>
     </section>
