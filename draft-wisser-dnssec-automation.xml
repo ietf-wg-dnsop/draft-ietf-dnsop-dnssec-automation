@@ -39,7 +39,7 @@
 		</address>
 	</author>
 
-    <date day="1" month="12" year="2020"/>
+    <date day="10" month="12" year="2020"/>
 
     <area>Operations and Management Area</area>
     <workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -199,6 +199,30 @@
                 <li>Remove CDS/CDNSKEY set from all signers</li>
             </ol>
         </section>
+    </section>
+    <section anchor="automation" numbered="true" toc="default">
+        <name>Automation</name>
+		<t>
+			Automation of the neccessary steps described in the last section can be
+			devided into two main models, centralized and decentralized. Both have
+			pros and cons and any zone operator should chose wisely.
+		</t>
+    	<section anchor="centralized" numbered="true" toc="default">
+        	<name>Centralized</name>
+			<t>
+				In a centralized model the zone operator will run a software executes
+				all steps neccessary and controls all signers.
+			</t>
+    	</section>
+    	<section anchor="decentralized" numbered="true" toc="default">
+        	<name>Decentralized</name>
+			<t>
+				In the decentralized models all signers will comminucate with each other
+				and execute the necessary steps on their instance only. For this signers
+				need a specialised protocol to comminicate configuration details that are
+				not part of the zone data.
+			</t>
+    	</section>
     </section>
     <section anchor="Acknowledgements" numbered="true" toc="default">
         <name>Acknowledgements</name>
