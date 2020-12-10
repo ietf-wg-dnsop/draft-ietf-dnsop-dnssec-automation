@@ -66,7 +66,7 @@
             DNSSEC configuration.
         </t>
         <t>
-            One of the corner cases of multi-signer DNSSEC is actually the secure change of DNS operator.
+            One of the special cases of multi-signer DNSSEC is actually the secure change of DNS operator.
         </t>
         <section numbered="true" toc="default">
             <name>Out-Of-Scope</name>
@@ -118,7 +118,7 @@
                 And a bad choice for users relying on the security of the zone.
             </t>
             <t>
-                Changing name server operators is an edge case of multi-signer DNSSEC operations.
+                Changing name server operators is a special case of multi-signer DNSSEC operations.
                 It simply comes down to the new operator joins the old operator in a multi-signer setup.
                 And once that is completed the old operator leaves the multi-signer setup.
             </t>
@@ -133,7 +133,7 @@
                 For full automation both the KSK and ZSK or CSK must be online.
             </t>
             <t>
-                This would be an edge case, a multi-signer group with only one signer.
+                This would be a special case, a multi-signer group with only one signer.
             </t>
         </section>
         <section numbered="true" toc="default">
