@@ -2,9 +2,9 @@
 
 This is the working area for the individual Internet-Draft, "DNSSEC automation".
 
-* [Editor's Copy](https://ulrichwisser.github.io/draft-wisser-dnssec-automation/#go.draft-wisser-dnssec-automation.html)
+* [Editor's Copy](http://dnssec-provisioning.github.io/draft-wisser-dnssec-automation/)
 * [Individual Draft](https://tools.ietf.org/html/draft-wisser-dnssec-automation)
-* [Compare Editor's Copy to Individual Draft](https://ulrichwisser.github.io/draft-wisser-dnssec-automation/#go.draft-wisser-dnssec-automation.diff)
+* [Compare Editor's Copy to Individual Draft](http://dnssec-provisioning.github.io/draft-wisser-dnssec-automation/#go.draft-wisser-dnssec-automation.diff)
 
 ## Building the Draft
 
