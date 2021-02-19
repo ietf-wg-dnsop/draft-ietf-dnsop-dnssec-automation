@@ -39,7 +39,20 @@
 		</address>
 	</author>
 
-    <date day="10" month="12" year="2020"/>
+	<author fullname="Shumon Huque" initials="S" surname="Huque">
+		<organization>Salesforce</organization>
+		<address>
+			<postal>
+				<street>415 Mission Street, 3rd Floor</street>
+				<city>San Francisco</city>
+				<code>CA 94105</code>
+				<country>United States of America</country>
+			</postal>
+			<email>shuque@gmail.com</email>
+		</address>
+	</author>
+
+    <date day="19" month="02" year="2021"/>
 
     <area>Operations and Management Area</area>
     <workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -50,8 +63,10 @@
     <abstract>
         <t>
             This document describes an algorithm and a protocol to
-            automate DNSSEC multi-signer <xref target="RFC8901" /> setup, operations and decomissioning.
-            it makes use of <xref target="RFC8078" /> and <xref target="RFC7477" /> to accomplish this.
+            automate DNSSEC multi-signer <xref target="RFC8901" /> "Multi-Signer DNSSEC Models" setup,
+			operations and decomissioning.
+            It makes use of <xref target="RFC8078" /> "Managing DS Records from the Parent via CDS/CDNSKEY"
+			and <xref target="RFC7477" /> "Child-to-Parent Synchronization in DNS" to accomplish this.
         </t>
     </abstract>
 </front>
@@ -210,7 +225,7 @@
     	<section anchor="centralized" numbered="true" toc="default">
         	<name>Centralized</name>
 			<t>
-				In a centralized model the zone operator will run a software executes
+				In a centralized model the zone operator will run a software that executes
 				all steps neccessary and controls all signers.
 			</t>
     	</section>
@@ -243,6 +258,7 @@
 	<references title="Informative References">
 		&RFC8901;
 	</references>
+<!--
 	<section title="Change History">
 		<section title="Change from 00 to 01" anchor="change-00-to-01">
 				<ol>
@@ -250,5 +266,6 @@
 				</ol>
 		</section>
 	</section>
+-->
 </back>
 </rfc>
