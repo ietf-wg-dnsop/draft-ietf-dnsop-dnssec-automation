@@ -9,7 +9,7 @@
 <!-- used by XSLT processors -->
 <rfc
       category="std"
-      docName="draft-wisser-dnssec-automation-latest"
+      docName="draft-wisser-dnssec-automation-01"
       ipr="trust200902"
       submissionType="IETF"
       xml:lang="en"
@@ -52,7 +52,7 @@
 		</address>
 	</author>
 
-    <date day="19" month="02" year="2021"/>
+    <date day="21" month="02" year="2021"/>
 
     <area>Operations and Management Area</area>
     <workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -65,6 +65,7 @@
             This document describes an algorithm and a protocol to
             automate DNSSEC multi-signer <xref target="RFC8901" /> "Multi-Signer DNSSEC Models" setup,
 			operations and decomissioning.
+            It primarily deals with Model 2 of the Multi-Signer specification, where each operator has their own distinct KSK and ZSK sets (or CSK sets).
             It makes use of <xref target="RFC8078" /> "Managing DS Records from the Parent via CDS/CDNSKEY"
 			and <xref target="RFC7477" /> "Child-to-Parent Synchronization in DNS" to accomplish this.
         </t>
@@ -74,7 +75,7 @@
     <section numbered="true" toc="default">
         <name>Introduction</name>
         <t>
-            <xref target="RFC8901" /> describes the neccessary steps and API for a multi-signer
+            <xref target="RFC8901" /> describes the necessary steps and API for a multi-signer
             DNSSEC configuration. In this document we will combine <xref target="RFC8901" /> with
             <xref target="RFC8078" /> and <xref target="RFC7477" /> to define a fully
             automatable algorithm for setting up, operating and decomissioning of a multi-signer
@@ -86,9 +87,9 @@
         <section numbered="true" toc="default">
             <name>Out-Of-Scope</name>
             <t>
-                In order for any multi-signer group to give consitent answers over all instances
-                the contents of the zone have to be synchronized. The content synchronization is
-                out-of-scope for this document.
+                In order for any multi-signer group to give consistent answers across all nameservers,
+                the data contents of the zone also have to be synchronized (in addition to infrastructure records like NS, DNSKEY, CDS etc). This content synchronization is out-of-scope
+                for this document.
             </t>
         </section>
         <section numbered="true" toc="default">
@@ -122,20 +123,20 @@
             </t>
             <t>
                 In this document we describe how all of the steps in the multi-signer DNSSEC setup
-                can be automated. That is, all except the initial trust between involded signers.
+                can be automated. That is, all except the initial trust between involved signers.
             </t>
         </section>
         <section numbered="true" toc="default">
             <name>Secure change of name server operator</name>
             <t>
                 Changing the name server operator of a DNSSEC signed zone can be quite a challenge.
-                Currently the most used algorithm is "going insecure". This is a bad choice for security.
-                And a bad choice for users relying on the security of the zone.
+                Currently the most common method is temporarily "going insecure". This is a bad choice for security,
+                and a bad choice for users relying on the security of the zone.
             </t>
             <t>
-                Changing name server operators is a special case of multi-signer DNSSEC operations.
-                It simply comes down to the new operator joins the old operator in a multi-signer setup.
-                And once that is completed the old operator leaves the multi-signer setup.
+                Changing name server operators can be considered to be a transient special case of
+                multi-signer DNSSEC operations. A new operator joins the old operator in a temporary
+                multi-signer setup. Once that is completed, the old operator leaves the multi-signer setup.
             </t>
         </section>
     </section>
@@ -154,12 +155,12 @@
         <section numbered="true" toc="default">
             <name>Configuration</name>
             <t>
-                The following configrations have to be made for any signer of the multi-signer group before joining the group.
+                The following configuration has to be made for any signer of the multi-signer group before joining the group.
                 These steps are not automated by this draft.
             </t>
             <ol>
-                <li>The signers own keys (probably the keys the signer has the private part of)</li>
-                <li>The NS records in the zone that get update from the signer.</li>
+                <li>The signers own keys (the keys the signer has the private part of)</li>
+                <li>The NS records in the zone</li>
                 <li>An established trust to the multi-signer group</li>
             </ol>
         </section>
@@ -170,24 +171,24 @@
                 <t>The new signer</t>
                 <ol>
                     <li>has a working setup of the zone, including DNSSEC signing.</li>
-                    <li>uses the same algorithm for DNSSEC signing as the multi-signer goup uses.</li>
+                    <li>uses the same algorithm for DNSSEC signing as the multi-signer group uses.</li>
                 </ol>
             </section>
             <section numbered="true" toc="default">
                 <name>Steps for joining</name>
                 <ol spacing="normal">
                     <li>a new signer joins the group</li>
-                    <li>Exchange of keys, after this step all signers must have the dnskey set of all other signers of the group</li>
+                    <li>Exchange of keys, after this step all signers must have the DNSKEY set of all other signers of the group</li>
                     <li>Calculate CDS/CDNSKEY set</li>
                     <li>All signers put the ZSK of all other signers in their DNSKEY set.</li>
                     <li>All signers publish their CDS/CDNSKEY set</li>
                     <li>Wait for parent to pick up DS updates</li>
                     <li>Remove CDS/CDNSKEY set from all signers</li>
                     <li>Wait 2 time maximum TTL of DS at parent and DNSKEY at all children</li>
-                    <li>Exchange of NS set, after this step all signers must have the ns set of all other signers</li>
+                    <li>Exchange of NS set, after this step all signers must have the NS set of all other signers</li>
                     <li>Compile new complete NS set with NS records from all signers</li>
                     <li>Compare to NS set at parent</li>
-                    <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
+                    <li>If parent is different, publish CSYNC record with NS and A and AAAA bit set.</li>
                     <li>Wait for parent to pick up changes</li>
                     <li>Remove CSYNC record from all signers</li>
                 </ol>
@@ -196,7 +197,7 @@
         <section numbered="true" toc="default">
             <name>A signer leaves the multi-signer group</name>
             <ol spacing="normal">
-                <li>Signal to all other signers to remove the leaving signes NS records</li>
+                <li>Signal to all other signers to remove the leaving signer's NS records</li>
                 <li>Compile new complete NS set with NS records from all signers</li>
                 <li>Compare to NS set at parent</li>
                 <li>If parent if different, publish CSYNC record with NS and A and AAAA bit set.</li>
@@ -206,7 +207,7 @@
                 <li>Signal all other signers leaving of multi-signer group</li>
                 <li>Stop answering queries</li>
                 <li>Remaining signers remove ZSK of leaving signer from their DNSKEY set</li>
-                <li>Remaining signers recalculat DNSKEY set</li>
+                <li>Remaining signers recalculate DNSKEY set</li>
                 <li>Calculate CDS/CDNSKEY set</li>
                 <li>All signers put the ZSK of all other signers in their DNSKEY set.</li>
                 <li>All signers publish their CDS/CDNSKEY set</li>
@@ -218,23 +219,23 @@
     <section anchor="automation" numbered="true" toc="default">
         <name>Automation</name>
 		<t>
-			Automation of the neccessary steps described in the last section can be
-			devided into two main models, centralized and decentralized. Both have
+			Automation of the necessary steps described in the last section can be
+			divided into two main models, centralized and decentralized. Both have
 			pros and cons and any zone operator should chose wisely.
 		</t>
     	<section anchor="centralized" numbered="true" toc="default">
         	<name>Centralized</name>
 			<t>
-				In a centralized model the zone operator will run a software that executes
-				all steps neccessary and controls all signers.
+				In a centralized model the zone operator will run software that executes
+				all steps necessary and controls all signers.
 			</t>
     	</section>
     	<section anchor="decentralized" numbered="true" toc="default">
         	<name>Decentralized</name>
 			<t>
-				In the decentralized models all signers will comminucate with each other
+				In the decentralized models all signers will communicate with each other
 				and execute the necessary steps on their instance only. For this signers
-				need a specialised protocol to comminicate configuration details that are
+				need a specialized protocol to communicate configuration details that are
 				not part of the zone data.
 			</t>
     	</section>
