@@ -65,8 +65,8 @@
             This document describes an algorithm and a protocol to
             automate DNSSEC multi-signer <xref target="RFC8901" /> "Multi-Signer DNSSEC Models" setup,
 			operations and decomissioning.
-            It primarily deals with Model 2 of the Multi-Signer specification, where each operator has their own distinct KSK and ZSK sets (or CSK sets).
-            It makes use of <xref target="RFC8078" /> "Managing DS Records from the Parent via CDS/CDNSKEY"
+            Using Model 2 of the Multi-Signer specification, where each operator has their own distinct KSK and ZSK sets (or CSK sets),
+            <xref target="RFC8078" /> "Managing DS Records from the Parent via CDS/CDNSKEY"
 			and <xref target="RFC7477" /> "Child-to-Parent Synchronization in DNS" to accomplish this.
         </t>
     </abstract>
@@ -77,12 +77,13 @@
         <t>
             <xref target="RFC8901" /> describes the necessary steps and API for a multi-signer
             DNSSEC configuration. In this document we will combine <xref target="RFC8901" /> with
-            <xref target="RFC8078" /> and <xref target="RFC7477" /> to define a fully
+            <xref target="RFC8078" /> and <xref target="RFC7477" /> to define an 
             automatable algorithm for setting up, operating and decomissioning of a multi-signer
             DNSSEC configuration.
         </t>
         <t>
             One of the special cases of multi-signer DNSSEC is actually the secure change of DNS operator.
+            Using Multi-Signer Model 2 the secure change of DNS operator can be accomplished.
         </t>
         <section numbered="true" toc="default">
             <name>Out-Of-Scope</name>
@@ -98,9 +99,9 @@
                 Short definitions of expressions used in this document
             </t>
             <dl>
-                <dt>signer</dt>
+                <dt>Signer</dt>
                 <dd>An entity signing a zone</dd>
-                <dt>multi-signer group</dt>
+                <dt>Multi-Signer Group</dt>
                 <dd>A group of signers that sign the same zone</dd>
             </dl>
         </section>
@@ -115,28 +116,30 @@
     <section numbered="true" toc="default">
         <name>Use Cases</name>
         <section numbered="true" toc="default">
-            <name>Running a multi-signer setup</name>
+            <name>Maintaining a Multi-Signer group</name>
             <t>
                 As described in <xref target="RFC8901" /> a multi-signer DNSSEC configuration
                 has some challenges that can be overcome with the right infrastructure and
                 following a number of steps for setup and operation.
             </t>
             <t>
-                In this document we describe how all of the steps in the multi-signer DNSSEC setup
-                can be automated. That is, all except the initial trust between involved signers.
+                In this document we describe, except for the initial trust, how the steps in the multi-signer DNSSEC setup
+                can be automated. 
             </t>
         </section>
         <section numbered="true" toc="default">
-            <name>Secure change of name server operator</name>
+            <name>Secure Nameserver Operator Transistion</name>
             <t>
-                Changing the name server operator of a DNSSEC signed zone can be quite a challenge.
-                Currently the most common method is temporarily "going insecure". This is a bad choice for security,
-                and a bad choice for users relying on the security of the zone.
+                Changing the nameserver operator of a DNSSEC signed zone can be challenging.
+                Currently the most common method is temporarily "going insecure". This is poor for security,
+                and for users relying on the security of the zone.
             </t>
             <t>
-                Changing name server operators can be considered to be a transient special case of
-                multi-signer DNSSEC operations. A new operator joins the old operator in a temporary
-                multi-signer setup. Once that is completed, the old operator leaves the multi-signer setup.
+
+		Multi-Signer DNSSEC Model 2 provides a mechanism for transitioning from one nameserver operator to another
+		without "going insecure". A new operator joins the current operator in a temporary
+		multi-signer group. Once that is accomplished and stable the old operator leaves the multi-signer group completing
+		the transistion.
             </t>
         </section>
     </section>
