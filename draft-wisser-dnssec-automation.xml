@@ -152,7 +152,7 @@
                     <li>A working setup of the zone, including DNSSEC signing.</li>
                     <li>Uses the same algorithm for DNSSEC signing as the Multi-Signer group uses or will use.</li>
 		    <li>The Signers own DNSKEYS KSK/ZSK or CSK (including private parts for online signing)</li>
-		    <li>All NS records for Nameservers that are authoratative in the zone</li>
+		    <li>The NS records in the zone</li>
                 </ol>
             </section>
         <section numbered="true" toc="default">
@@ -166,28 +166,18 @@
             </t>
         </section>
         <section numbered="true" toc="default">
-            <name>Configuration</name>
-            <t>
-                The following configuration has to be made for any signer of the Multi-Signer group before joining the group.
-                These steps are not automated by this draft.
-            </t>
-            <ol>
-                <li>The signers own keys (the keys the signer has the private part of)</li>
-                <li>The NS records in the zone</li>
-                <li>An established trust to the Multi-Signer group</li>
-            </ol>
-        </section>
-        <section numbered="true" toc="default">
             <name>A Signer joins the Multi-Signer group</name>
                 <ol spacing="normal">
 		    <li>Confirm that the incoming Signer meets the prerequisites.</li>
 		    <li>Establish a trust mechanism between the Multi-Signer group and the Signer.</li>
+		    <li>Calculate CDS/CDNSKEY Records for all KSKs/CSKs represented in the Multi-Signer group.</li>
+		    <li>Configure all Signers with the compiled CDS/CDNSKEY RRSET.</li>
 		    <li>Add ZSK for each signer to all other Signers.</li>
-		    <li>Calculate and publich CDS/CDNSKEY on each Signer individually.</li>
 		    <li>Wait for Parent to publish DS Post/Posts.</li>
-		    <li>Remove CDS/CDNSKEY from all Signers. (?optional?)</li>
+		    <li>Remove CDS/CDNSKEY Records from all Signers. (optional)</li>
 		    <li>Wait 2 times the greater of either the TTL of the DS record at the Parent or the greatest TTL of the DNSKEY RRSET of the Children</li>
-		    <li>Harmonize NS RRSET across all Signers.</li>
+		    <li>Compile NS RRSET including all NS records from all Signers.</li>
+		    <li>Configure all Signers with the compiled NS RRSET.</li>
 		    <li>Compare NS RRSET of the Signers to the Parent, if there is a difference publish CSYNC record with NS and A and AAAA bit set on all signers.</li>
 		    <li>Wait for Parent to publish NS.</li>
                     <li>Remove CSYNC record from all signers.</li>
