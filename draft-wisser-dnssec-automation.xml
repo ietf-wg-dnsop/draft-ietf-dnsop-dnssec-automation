@@ -180,7 +180,7 @@
 		    <li>Configure all Signers with the compiled NS RRSET.</li>
 		    <li>Compare NS RRSET of the Signers to the Parent, if there is a difference publish CSYNC record with NS and A and AAAA bit set on all signers.</li>
 		    <li>Wait for Parent to publish NS.</li>
-                    <li>Remove CSYNC record from all signers.</li>
+                    <li>Remove CSYNC record from all signers. (optional)</li>
                 </ol>
         </section>
         <section numbered="true" toc="default">
