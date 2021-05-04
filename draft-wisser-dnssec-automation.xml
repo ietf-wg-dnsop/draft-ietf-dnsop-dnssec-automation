@@ -186,16 +186,17 @@
         <section numbered="true" toc="default">
             <name>A signer leaves the Multi-Signer group</name>
             <ol spacing="normal">
-                <li>Remove exiting Signer's NS records from all Signers</li>
-		<li>Compare NS RRSET of the Signers to the Parent, if there is a difference publish CSYNC record with NS and A and AAAA bit set on all signers.</li>
-		<li>Wait for Parent to publish NS.</li>
-                <li>Remove CSYNC record from all signers.</li>
+                <li>Remove exiting Signer's NS records from remaining Signers</li>
+		<li>Compare NS RRSET of the Signers to the Parent, if there is a difference publish CSYNC record with NS and A and AAAA bit set on remaing signers.</li>
+		<li>Wait for Parent to publish NS RRSET.</li>
+                <li>Remove CSYNC record from all signers. (optional)</li>
                 <li>Wait 2 times the greater of the NS TTL at the Parent and all Signers.</li>
                 <li>Stop the exiting Signer from answering queries.</li>
-                <li>Remove ZSK of the exiting Signer from Signers still in the Multi-Signer group.</li>
-		<li>Calculate and publich CDS/CDNSKEY on each Signer individually.</li>
+		<li>Calculate CDS/CDNSKEY Records for KSKs/CSKs published by the remaining Signers.</li>
+		<li>Configure remaining Signers with the compiled CDS/CDNSKEY RRSET.</li>
+                <li>Remove ZSK of the exiting Signer from remaining Signers.</li>
 		<li>Wait for Parent to publush DS post/posts.</li>
-		<li>Remove CDS/CDNSKEY set from all signers. (?Optional?)</li>
+		<li>Remove CDS/CDNSKEY set from all signers. (Optional)</li>
             </ol>
         </section>
     </section>
