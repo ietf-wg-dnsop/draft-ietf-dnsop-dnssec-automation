@@ -164,7 +164,7 @@
 		<section anchor="automation" numbered="true" toc="default">
 			<name>Automation Models</name>
 			<t>
-				Automation of the necessary steps described in the last section
+				Automation of the necessary steps
 				can be divided into two main models, centralized and decentralized.
 				Both have pros and cons and any zone operator should chose wisely.
 			</t>
@@ -173,6 +173,12 @@
 				<t>
 					In a centralized model the zone operator will run controller
 					that executes all steps necessary and controls all signers.
+				</t>
+				<t>
+					A centralized controller needs to have authorized access to all signers.
+					This can be achieved in a variety of different ways. For example will many
+					service providers offer access through a Restful API. Another possibility
+					is access through Dynamic DNS <xref target="RFC2136" /> with TSIG authentication.
 				</t>
 			</section>
 			<section anchor="decentralized" numbered="true" toc="default">
@@ -185,6 +191,22 @@
 					the zone data.
 				</t>
 			</section>
+			<section anchor="capabilities" numbered="true" toc="default">
+				<name>Capabilities</name>
+				<t>
+					In order for any of the models to work the signer must
+					support the following capabilities.
+				</t>
+				<ol>
+					<li>Add DNSKEY records (without the private key)</li>
+					<li>Remove (previously added) DNSKEY record(s)</li>
+					<li>Add CDS and CDNSKEY records for keys not in the DNSKEY set</li>
+					<li>Remove (previously added) CDS and CDNSKEY records</li>
+					<li>Add CSYNC record</li>
+					<li>Remove CSYNC record</li>
+				</ol>
+			</section>
+
 		</section>
 		<section anchor="algo" numbered="true" toc="default">
 			<name>Algorithms</name>
@@ -504,13 +526,40 @@
 		<section anchor="IANA" numbered="true" toc="default">
 			<name>IANA Considerations</name>
 		</section>
+		<section anchor="implementation" numbered="true" toc="default">
+			<name>Implementation Status</name>
+			<t>
+				One implementation of a centralized controller which supports updates
+			  through Dynamic DNS or Restfull API's of several vendors has been implemented
+				by the Swedish Internet Foundation.
+			</t>
+			<t>
+				The code can be found as part of the Multi-Signer project on Github
+				<eref target="https://github.com/DNSSEC-Provisioning/multi-signer-controller" />
+			</t>
+		</section>
 		<section anchor="Security" numbered="true" toc="default">
 			<name>Security Considerations</name>
+			<t>
+				Every step of the multi-signer algorithms has to be carefully executed at the right time and date.
+				Any failure could resolve in the loss of resolution for the domain.
+			</t>
+			<t>
+				Independendly of the chosen model, it is crucial that only authorized entities
+				will be able to change the zone data. Some providers or software installation allow to
+				make more specific configuration on the allowed changes. All extra steps to allowsas little
+				access to change zone data as possible should be taken.
+			</t>
+			<t>
+				If used correctly the multi-signer algorithm will strengthen the domain security
+				by avoiding "going insecure" at any stage of the domain life cycle.
+			</t>
 		</section>
 	</middle>
 	<back>
 		<references title="Normative References">
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml"/>
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4035.xml"/>
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6840.xml"/>
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7477.xml"/>
