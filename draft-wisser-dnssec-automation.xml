@@ -57,7 +57,7 @@
 			</address>
 		</author>
 
-		<date day="24" month="06" year="2021"/>
+		<date day="05" month="07" year="2021"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -90,7 +90,7 @@
 				DNSSEC configuration.
 			</t>
 			<t>
-				One of the special cases of Multi-Signer DNSSEC is actually the secure
+				One of the special cases of Multi-Signer DNSSEC is the secure
 				change of DNS operator. Using Multi-Signer Model 2 the secure change
 				of DNS operator can be accomplished.
 			</t>
@@ -101,7 +101,10 @@
 					across all nameservers, the data contents of the zone also have to
 					be synchronized (in addition to infrastructure records like NS,
 					DNSKEY, CDS etc). This content synchronization is out-of-scope
-					for this document.
+					for this document (although there are a number of methods that
+                                        can be used, such as making the the same updates to each operator
+                                        using their respective APIs, using zone transfer in conjunction
+                                        with "inline signing" at each operator, etc.)
 				</t>
 			</section>
 			<section numbered="true" toc="default">
@@ -145,19 +148,22 @@
 				</t>
 			</section>
 			<section numbered="true" toc="default">
-				<name>Secure Nameserver Operator Transistion</name>
+				<name>Secure Nameserver Operator Transition</name>
 				<t>
 					Changing the nameserver operator of a DNSSEC signed zone can be
 					challenging. Currently the most common method is temporarily
 					"going insecure". This is poor for security, and for users
-					relying on the security of the zone.
+					relying on the security of the zone. Furthermore, when DNSSEC
+                                        is being used for application security functions like DANE
+                                        <xref target="RFC6698" />, it is critical that the DNSSEC chain
+                                        of trust remain unbroken during the transfer.
 				</t>
 				<t>
 					Multi-Signer DNSSEC Model 2 provides a mechanism for transitioning
 					from one nameserver operator to another without "going insecure".
 					A new operator joins the current operator in a temporary
 					Multi-Signer group. Once that is accomplished and stable the old
-					operator leaves the Multi-Signer group completing the transistion.
+					operator leaves the Multi-Signer group completing the transition.
 				</t>
 			</section>
 		</section>
@@ -165,8 +171,9 @@
 			<name>Automation Models</name>
 			<t>
 				Automation of the necessary steps
-				can be divided into two main models, centralized and decentralized.
-				Both have pros and cons and any zone operator should chose wisely.
+				can be categorized into two main models, centralized and decentralized.
+				Both have pros and cons, and a zone operator should carefully choose
+                                the model that works best.
 			</t>
 			<section anchor="centralized" numbered="true" toc="default">
 				<name>Centralized</name>
@@ -177,8 +184,8 @@
 				<t>
 					A centralized controller needs to have authorized access to all signers.
 					This can be achieved in a variety of different ways. For example will many
-					service providers offer access through a Restful API. Another possibility
-					is access through Dynamic DNS <xref target="RFC2136" /> with TSIG authentication.
+					service providers offer access through a REST API. Another possibility
+					is access through Dynamic Update <xref target="RFC2136" /> with TSIG authentication.
 				</t>
 			</section>
 			<section anchor="decentralized" numbered="true" toc="default">
@@ -225,7 +232,7 @@
 						group uses or will use.
 					</li>
 					<li>
-						Signer or controller must be able to differentiate between it's own keys and
+						Signer or controller must be able to differentiate between its own keys and
 						keys from others signers
 					</li>
 					<li>
@@ -250,7 +257,7 @@
 						new DS set has propagated.
 					</t>
 					<t>
-						The minimum DS Waiting Time is the maximum of all DS TTL values.
+						The minimum DS Waiting Time is the TTL of the DS RRset.
 					</t>
 				</section>
 				<section anchor="dnskey-waiting-time" numbered="true" toc="default">
@@ -310,7 +317,7 @@
 						Add ZSK for each signer to all other Signers.
 					</li>
 					<li>
-						Wait for Parent to publish DS Post/Posts.
+						Wait for Parent to publish the combined DS RRset.
 					</li>
 					<li>
 						Remove CDS/CDNSKEY Records from all Signers. (optional)
@@ -347,7 +354,7 @@
 					<li>
 						Compare NS RRSET of the Signers to the Parent, if there
 						is a difference publish CSYNC record with NS and A and AAAA
-						bit set on remaing signers.
+						bit set on remaining signers.
 					</li>
 					<li>
 						Wait for Parent to publish NS RRSET.
@@ -373,7 +380,7 @@
 						Remove ZSK of the exiting Signer from remaining Signers.
 					</li>
 					<li>
-						Wait for Parent to publish DS post/posts.
+						Wait for Parent to publish the updated DS RRset.
 					</li>
 					<li>
 						Remove CDS/CDNSKEY set from all signers. (Optional)
@@ -414,7 +421,7 @@
 						Signer signs DNSKEY RRset with old and new CSK / KSK.
 					</li>
 					<li>
-						Caculate new CDS/CDNSKEY RRset and publish on all signers,
+						Calculate new CDS/CDNSKEY RRset and publish on all signers,
 						containing both, the old and new CSK / KSK data.
 					</li>
 					<li>
@@ -428,7 +435,7 @@
 						signatures done with this key.
 					</li>
 					<li>
-						Caculate new CDS/CDNSKEY RRset and publish on all signers,
+						Calculate new CDS/CDNSKEY RRset and publish on all signers,
 						containing only the new CSK / KSK data.
 					</li>
 					<li>
@@ -447,7 +454,7 @@
 					<li>Wait until all signers have signed all data with the new key(s).</li>
 
 					<li>
-						Caculate new CDS/CDNSKEY RRset and publish on all signers.
+						Calculate new CDS/CDNSKEY RRset and publish on all signers.
 					</li>
 					<li>
 						Wait for parent to pickup and publish new DS RR set.
@@ -459,7 +466,7 @@
 						Removes all keys and signatures which are using the old algorithm.
 					</li>
 					<li>
-						Caculate new CDS/CDNSKEY RRset and publish on all signers.
+						Calculate new CDS/CDNSKEY RRset and publish on all signers.
 					</li>
 					<li>
 						Wait for parent to pickup and publish new DS RR set.
@@ -478,7 +485,7 @@
         the zone's DS RRset and expected trust anchors for the zone.
 			</t>
 			<t>
-				A setup where different signers use sifferent key algorithms therefore
+				A setup where different signers use different key algorithms therefore
 				violates <xref target="RFC4035" />.
 			</t>
 			<t>
@@ -493,7 +500,7 @@
 			</t>
 			<t>
 				This could be an acceptable risk in a situation where going insecure
-				is not desireable or impossible and name servers have to be changed
+				is not desirable or impossible and name servers have to be changed
 				between operators which only support distinct set of key algorithms.
 			</t>
 			<t>
@@ -513,7 +520,7 @@
 			<t>
 				The validator will not be able to validate the DNSKEY RR set or
 				any data from one of the signers. So in some cases the validator
-				will consider the zone bogus and reply with SERVFAIL.
+				will consider the zone bogus and reply with a SERVFAIL response code.
 			</t>
 			<t>
 				The later scenario can be mitigated, but not fully eliminated, by
@@ -530,7 +537,7 @@
 			<name>Implementation Status</name>
 			<t>
 				One implementation of a centralized controller which supports updates
-			  through Dynamic DNS or Restfull API's of several vendors has been implemented
+			  through Dynamic DNS or REST API's of several vendors has been implemented
 				by the Swedish Internet Foundation.
 			</t>
 			<t>
@@ -545,13 +552,13 @@
 				Any failure could resolve in the loss of resolution for the domain.
 			</t>
 			<t>
-				Independendly of the chosen model, it is crucial that only authorized entities
+				Independently of the chosen model, it is crucial that only authorized entities
 				will be able to change the zone data. Some providers or software installation allow to
-				make more specific configuration on the allowed changes. All extra steps to allowsas little
+				make more specific configuration on the allowed changes. All extra steps to allows as little
 				access to change zone data as possible should be taken.
 			</t>
 			<t>
-				If used correctly the multi-signer algorithm will strengthen the domain security
+				If used correctly the multi-signer algorithm will strengthen the DNS security
 				by avoiding "going insecure" at any stage of the domain life cycle.
 			</t>
 		</section>
@@ -566,6 +573,7 @@
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8078.xml"/>
 		</references>
 		<references title="Informative References">
+			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
 		</references>
 		<section title="Change History">
