@@ -57,7 +57,7 @@
 			</address>
 		</author>
 
-		<date day="24" month="06" year="2021"/>
+		<date day="10" month="07" year="2021"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -522,6 +522,11 @@
 		</section>
 		<section anchor="Acknowledgements" numbered="true" toc="default">
 			<name>Acknowledgements</name>
+			<t>
+				The authors would like to thank the following for their review of
+				this work and their valuable comments: Steve Crocker, Eric Osterweil,
+				Roger Murray, Jonas Andersson, Peter Thomassen.
+			</t>
 		</section>
 		<section anchor="IANA" numbered="true" toc="default">
 			<name>IANA Considerations</name>
@@ -569,7 +574,7 @@
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
 		</references>
 		<section title="Change History">
-			<section title="Change from 00 to 01" anchor="change-00-to-01">
+			<section title="Change from 01 to 02">
 				<ol>
 					<li>Trying to fix wording to be more precise</li>
 					<li>Added algorithm for ZSK rollover</li>
