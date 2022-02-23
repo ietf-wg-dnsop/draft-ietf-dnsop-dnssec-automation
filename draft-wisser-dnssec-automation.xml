@@ -57,11 +57,7 @@
 			</address>
 		</author>
 
-<<<<<<< HEAD
 		<date day="10" month="07" year="2021"/>
-=======
-		<date day="05" month="07" year="2021"/>
->>>>>>> 0131f3e (Tweaks.)
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
