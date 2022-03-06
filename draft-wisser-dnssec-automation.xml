@@ -57,7 +57,7 @@
 			</address>
 		</author>
 
-		<date day="10" month="07" year="2021"/>
+		<date day="06" month="03" year="2022"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -306,15 +306,15 @@
 						Establish a trust mechanism between the Multi-Signer group
 						and the Signer.
 					</li>
+          <li>
+						Add ZSK for each signer to all other Signers.
+					</li>
 					<li>
 						Calculate CDS/CDNSKEY Records for all KSKs/CSKs represented
 						in the Multi-Signer group.
 					</li>
 					<li>
 						Configure all Signers with the compiled CDS/CDNSKEY RRSET.
-					</li>
-					<li>
-						Add ZSK for each signer to all other Signers.
 					</li>
 					<li>
 						Wait for Parent to publish the combined DS RRset.
@@ -417,13 +417,15 @@
 					<li>
 						Signer publishes new CSK / KSK in its own DNSKEY RRset.
 					</li>
+          <li>
+						In case of CSK, add CSK to DNSKEY set of all other Signers.
+					</li>
 					<li>
 						Signer signs DNSKEY RRset with old and new CSK / KSK.
 					</li>
 					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers,
-						containing both, the old and new CSK / KSK data.
-					</li>
+						Calculate new CDS/CDNSKEY RRset and publish on all signers.
+          </li>
 					<li>
 						Wait for parent to pickup and publish new DS RR set.
 					</li>
@@ -431,12 +433,14 @@
 						Wait DS-Wait-Time + DNSKEY-Wait-Time
 					</li>
 					<li>
-						Signer removes old KSK from its DNSKEY RR set. And removes all
+						Signer removes old CSK/KSK from its DNSKEY RR set. And removes all
 						signatures done with this key.
 					</li>
+          <li>
+						In case  of CSK, remove old CSK from DNSKEY set of all other signers.
+					</li>
 					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers,
-						containing only the new CSK / KSK data.
+						Calculate new CDS/CDNSKEY RRset and publish on all signers.
 					</li>
 					<li>
 						Wait for parent to pickup and publish new DS RR set.
@@ -452,7 +456,9 @@
 					<li>All signers publish KSK and ZSK or CSK using the new algorithm.</li>
 					<li>All signers sign all zone data with the new keys.</li>
 					<li>Wait until all signers have signed all data with the new key(s).</li>
-
+          <li>
+						Add new ZSK of each signer to all other Signers.
+					</li>
 					<li>
 						Calculate new CDS/CDNSKEY RRset and publish on all signers.
 					</li>
@@ -582,12 +588,18 @@
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
 		</references>
 		<section title="Change History">
-			<section title="Change from 01 to 02">
+      <section title="Change from 01 to 02">
 				<ol>
 					<li>Trying to fix wording to be more precise</li>
 					<li>Added algorithm for ZSK rollover</li>
 					<li>Added algorithm for KSK rollover</li>
 					<li>Added algorithm for algorithm rollover</li>
+				</ol>
+			</section>
+      <section title="Change from 02 to 03">
+				<ol>
+					<li>Fix sequnce of steps in the joining procedure</li>
+          <li>Excplicit handling of CSK cases in CSK/ KSK rollover</li>
 				</ol>
 			</section>
 		</section>
