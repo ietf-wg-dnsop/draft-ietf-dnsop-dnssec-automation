@@ -13,7 +13,7 @@
 <rfc
   xmlns:xi="http://www.w3.org/2001/XInclude"
   category="std"
-  docName="draft-wisser-dnssec-automation-latest"
+  docName="draft-ietf-dnsop-dnssec-automation-latest"
   ipr="trust200902"
   obsoletes=""
   updates=""
@@ -57,7 +57,7 @@
 			</address>
 		</author>
 
-		<date day="06" month="03" year="2022"/>
+		<date day="24" month="05" year="2022"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
