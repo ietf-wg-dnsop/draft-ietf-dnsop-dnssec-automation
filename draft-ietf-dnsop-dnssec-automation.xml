@@ -31,16 +31,8 @@
 		<title abbrev="DNSSEC automation">DNSSEC automation</title>
 
 		<author fullname="Ulrich Wisser" initials="U" surname="Wisser">
-			<organization>The Swedish Internet Foundation</organization>
 			<address>
-				<postal>
-					<street>Box 92073</street>
-					<city>Stockholm</city>
-					<code>12007</code>
-					<country>SE</country>
-				</postal>
 				<email>ulrich@wisser.se</email>
-				<uri>https://www.internetstiftelsen.se</uri>
 			</address>
 		</author>
 
@@ -57,7 +49,7 @@
 			</address>
 		</author>
 
-		<date day="24" month="05" year="2022"/>
+		<date day="06" month="02" year="2023"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -451,12 +443,12 @@
 				</ol>
 			</section>
 			<section>
-				<name>Algorithm rollover for the whole Multi-Signer group.</name>
+				<name>Algorithm rollover for the whole Multi-Signer group</name>
 				<ol>
 					<li>All signers publish KSK and ZSK or CSK using the new algorithm.</li>
 					<li>All signers sign all zone data with the new keys.</li>
 					<li>Wait until all signers have signed all data with the new key(s).</li>
-          <li>
+          			<li>
 						Add new ZSK of each signer to all other Signers.
 					</li>
 					<li>
@@ -482,6 +474,10 @@
 					</li>
 				</ol>
 			</section>
+			<section>
+				<name>Timing Consideration</name>
+			</section>
+
 		</section>
 		<section>
 			<name>Signers with different algorithms in one Multi-Signer group</name>
@@ -598,8 +594,9 @@
 			</section>
       <section title="Change from 02 to 03">
 				<ol>
-					<li>Fix sequnce of steps in the joining procedure</li>
-          <li>Excplicit handling of CSK cases in CSK/ KSK rollover</li>
+					<li>Fix sequence of steps in the joining procedure</li>
+          			<li>Excplicit handling of CSK cases in CSK/ KSK rollover</li>
+					<li>Add section "Timing Considerations", but no content yet</li>
 				</ol>
 			</section>
 		</section>
