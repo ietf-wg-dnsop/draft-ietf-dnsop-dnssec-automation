@@ -5,8 +5,10 @@
 Domain Name System Operations (dnsop)                          U. Wisser
 Internet-Draft                                                          
 Intended status: Standards Track                                S. Huque
-Expires: 10 August 2023                                       Salesforce
-                                                         6 February 2023
+Expires: 23 April 2024                                        Salesforce
+                                                             J. Stenstam
+                                         The Swedish Internet Foundation
+                                                         21 October 2023
 
 
                            DNSSEC automation
@@ -14,13 +16,13 @@ Expires: 10 August 2023                                       Salesforce
 
 Abstract
 
-   This document describes an algorithm and a protocol to automate
-   DNSSEC Multi-Signer [RFC8901] "Multi-Signer DNSSEC Models" setup,
-   operations and decomissioning.  Using Model 2 of the Multi-Signer
+   This document describes an algorithm and a protocol to automate the
+   setup, operations, and decomissioning of Multi-Signer DNSSEC
+   [RFC8901] configurations.  It employs Model 2 of the Multi-Signer
    specification, where each operator has their own distinct KSK and ZSK
-   sets (or CSK sets), [RFC8078] "Managing DS Records from the Parent
-   via CDS/CDNSKEY" and [RFC7477] "Child-to-Parent Synchronization in
-   DNS" to accomplish this.
+   sets (or CSK sets), Managing DS Records from the Parent via CDS/
+   CDNSKEY [RFC8078], and Child-to-Parent Synchronization in DNS
+   [RFC7477] to accomplish this.
 
 Status of This Memo
 
@@ -37,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 August 2023.
+   This Internet-Draft will expire on 23 April 2024.
 
 Copyright Notice
 
@@ -536,7 +538,9 @@ Authors' Addresses
 
    Shumon Huque
    Salesforce
-   415 Mission Street, 3rd Floor
-   San Francisco,  CA 94105
-   United States of America
    Email: shuque@gmail.com
+
+
+   Johan Stenstam
+   The Swedish Internet Foundation
+   Email: johan.stenstam@internetstiftelsen.se
