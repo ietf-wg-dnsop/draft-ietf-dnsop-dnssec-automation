@@ -39,34 +39,38 @@
 		<author fullname="Shumon Huque" initials="S" surname="Huque">
 			<organization>Salesforce</organization>
 			<address>
-				<postal>
-					<street>415 Mission Street, 3rd Floor</street>
-					<city>San Francisco</city>
-					<code>CA 94105</code>
-					<country>United States of America</country>
-				</postal>
 				<email>shuque@gmail.com</email>
 			</address>
 		</author>
 
-		<date day="06" month="02" year="2023"/>
+		<author fullname="Johan Stenstam" initials="J" surname="Stenstam">
+			<organization>The Swedish Internet Foundation</organization>
+			<address>
+				<email>johan.stenstam@internetstiftelsen.se</email>
+			</address>
+		</author>
+
+		<date day="21" month="10" year="2023"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
 
+		<keyword>DNS</keyword>
 		<keyword>DNSSEC</keyword>
 		<keyword>Multi-Signer</keyword>
+		<keyword>Automation</keyword>
 
 		<abstract>
 			<t>
 				This document describes an algorithm and a protocol to
-				automate DNSSEC Multi-Signer <xref target="RFC8901" /> "Multi-Signer
-				DNSSEC Models" setup, operations and decomissioning.
-				Using Model 2 of the Multi-Signer specification, where each operator
-				has their own distinct KSK and ZSK sets (or CSK sets),
-				<xref target="RFC8078" /> "Managing DS Records from the Parent via
-				CDS/CDNSKEY" and <xref target="RFC7477" /> "Child-to-Parent
-				Synchronization in DNS" to accomplish this.
+				automate the setup, operations, and decomissioning of
+                                <xref target="RFC8901">Multi-Signer DNSSEC</xref>
+                                configurations. It employs Model 2 of the Multi-Signer
+                                specification, where each operator has their own distinct
+                                KSK and ZSK sets (or CSK sets),
+				<xref target="RFC8078">Managing DS Records from the Parent via
+				CDS/CDNSKEY</xref>, and <xref target="RFC7477">Child-to-Parent
+				Synchronization in DNS</xref> to accomplish this.
 			</t>
 		</abstract>
 	</front>
