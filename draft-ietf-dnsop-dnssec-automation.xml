@@ -62,17 +62,26 @@
 
 		<abstract>
 			<t>
-				This document describes an algorithm and a protocol to
+				This document describes an algorithm and protocol to
 				automate the setup, operations, and decomissioning of
-                                <xref target="RFC8901">Multi-Signer DNSSEC</xref>
-                                configurations. It employs Model 2 of the Multi-Signer
-                                specification, where each operator has their own distinct
-                                KSK and ZSK sets (or CSK sets),
+				<xref target="RFC8901">Multi-Signer DNSSEC</xref>
+				configurations. It employs Model 2 of the Multi-Signer
+				specification, where each operator has their own distinct
+				KSK and ZSK sets (or CSK sets),
 				<xref target="RFC8078">Managing DS Records from the Parent via
 				CDS/CDNSKEY</xref>, and <xref target="RFC7477">Child-to-Parent
 				Synchronization in DNS</xref> to accomplish this.
 			</t>
 		</abstract>
+
+		<note removeInRFC="true">
+		<name>Discussion Venues</name>
+		<t>
+			Source for this draft and an issue tracker can be found at
+			<eref target="https://github.com/ietf-wg-dnsop/draft-ietf-dnsop-dnssec-automation"/>.
+		</t>
+		</note>
+
 	</front>
 	<middle>
 		<section numbered="true" toc="default">
@@ -98,9 +107,9 @@
 					be synchronized (in addition to infrastructure records like NS,
 					DNSKEY, CDS etc). This content synchronization is out-of-scope
 					for this document (although there are a number of methods that
-                                        can be used, such as making the the same updates to each operator
-                                        using their respective APIs, using zone transfer in conjunction
-                                        with "inline signing" at each operator, etc.)
+					can be used, such as making the the same updates to each operator
+					using their respective APIs, using zone transfer in conjunction
+					with "inline signing" at each operator, etc.)
 				</t>
 			</section>
 			<section numbered="true" toc="default">
@@ -150,9 +159,9 @@
 					challenging. Currently the most common method is temporarily
 					"going insecure". This is poor for security, and for users
 					relying on the security of the zone. Furthermore, when DNSSEC
-                                        is being used for application security functions like DANE
-                                        <xref target="RFC6698" />, it is critical that the DNSSEC chain
-                                        of trust remain unbroken during the transfer.
+					is being used for application security functions like DANE
+					<xref target="RFC6698" />, it is critical that the DNSSEC chain
+					of trust remain unbroken during the transfer.
 				</t>
 				<t>
 					Multi-Signer DNSSEC Model 2 provides a mechanism for transitioning
@@ -302,7 +311,7 @@
 						Establish a trust mechanism between the Multi-Signer group
 						and the Signer.
 					</li>
-          <li>
+					<li>
 						Add ZSK for each signer to all other Signers.
 					</li>
 					<li>
@@ -413,7 +422,7 @@
 					<li>
 						Signer publishes new CSK / KSK in its own DNSKEY RRset.
 					</li>
-          <li>
+					<li>
 						In case of CSK, add CSK to DNSKEY set of all other Signers.
 					</li>
 					<li>
@@ -421,7 +430,7 @@
 					</li>
 					<li>
 						Calculate new CDS/CDNSKEY RRset and publish on all signers.
-          </li>
+					</li>
 					<li>
 						Wait for parent to pickup and publish new DS RR set.
 					</li>
@@ -432,7 +441,7 @@
 						Signer removes old CSK/KSK from its DNSKEY RR set. And removes all
 						signatures done with this key.
 					</li>
-          <li>
+					<li>
 						In case  of CSK, remove old CSK from DNSKEY set of all other signers.
 					</li>
 					<li>
@@ -452,7 +461,7 @@
 					<li>All signers publish KSK and ZSK or CSK using the new algorithm.</li>
 					<li>All signers sign all zone data with the new keys.</li>
 					<li>Wait until all signers have signed all data with the new key(s).</li>
-          			<li>
+					<li>
 						Add new ZSK of each signer to all other Signers.
 					</li>
 					<li>
@@ -479,16 +488,16 @@
 				</ol>
 			</section>
 			<section>
-				<name>Timing Consideration</name>
+				<name>Timing Considerations</name>
 			</section>
 
 		</section>
 		<section>
-			<name>Signers with different algorithms in one Multi-Signer group</name>
+			<name>Signers with different algorithms in a Multi-Signer group</name>
 			<t>
 				<xref target="RFC4035" section="2.2"/> states that
 				a signed zone MUST include a DNSKEY for each algorithm present in
-        the zone's DS RRset and expected trust anchors for the zone.
+				the zone's DS RRset and expected trust anchors for the zone.
 			</t>
 			<t>
 				A setup where different signers use different key algorithms therefore
@@ -587,22 +596,6 @@
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
 			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
 		</references>
-		<section title="Change History">
-      <section title="Change from 01 to 02">
-				<ol>
-					<li>Trying to fix wording to be more precise</li>
-					<li>Added algorithm for ZSK rollover</li>
-					<li>Added algorithm for KSK rollover</li>
-					<li>Added algorithm for algorithm rollover</li>
-				</ol>
-			</section>
-      <section title="Change from 02 to 03">
-				<ol>
-					<li>Fix sequence of steps in the joining procedure</li>
-          			<li>Excplicit handling of CSK cases in CSK/ KSK rollover</li>
-					<li>Add section "Timing Considerations", but no content yet</li>
-				</ol>
-			</section>
-		</section>
+
 	</back>
 </rfc>
