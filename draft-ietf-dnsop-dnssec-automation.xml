@@ -50,7 +50,7 @@
 			</address>
 		</author>
 
-		<date day="21" month="10" year="2023"/>
+		<date day="4" month="4" year="2024"/>
 
 		<area>Operations and Management Area</area>
 		<workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -113,12 +113,12 @@
 		<section numbered="true" toc="default">
 			<name>Terminology</name>
 			<t>
-				The key words "<strong>MUST</strong>", "<strong>MUST NOT</strong>", 
+				The key words "<strong>MUST</strong>", "<strong>MUST NOT</strong>",
 				"<strong>REQUIRED</strong>", "<strong>SHALL</strong>", "<strong>SHALL NOT</strong>",
-				"<strong>SHOULD</strong>", "<strong>SHOULD NOT</strong>", 
-				"<strong>RECOMMENDED</strong>", "<strong>MAY</strong>", and 
-				"<strong>OPTIONAL</strong>" in this document are to be interpreted as 
-				described in BCP 14	<xref target="RFC2119" /> <xref target="RFC8174" /> when, 
+				"<strong>SHOULD</strong>", "<strong>SHOULD NOT</strong>",
+				"<strong>RECOMMENDED</strong>", "<strong>MAY</strong>", and
+				"<strong>OPTIONAL</strong>" in this document are to be interpreted as
+				described in BCP 14	<xref target="RFC2119" /> <xref target="RFC8174" /> when,
 				and only when, they appear in all capitals, as shown here.
 			</t>
 			<t><strong>Signer</strong></t>
@@ -131,7 +131,7 @@
 				the decentralized model.
 			</t>
 			<t><strong>Parent</strong></t>
-			<t>See <xref target="RFC499" /></t>
+			<t>See <xref target="RFC8499" /></t>
 			<t><strong>Trust mechanism</strong></t>
 			<t><strong>DS-Wait-Time</strong></t>
 			<t>
@@ -197,9 +197,9 @@
 			<section numbered="true" toc="default">
 				<name>Permanent multi-signer Operations</name>
 				<t>
-					Using multiple DNS providers to distribute authoritative DNS service 
-					with each provider signing independendly and with their own key set. 
-					This use-case is described in <xref target="RFC8901" />. 
+					Using multiple DNS providers to distribute authoritative DNS service
+					with each provider signing independendly and with their own key set.
+					This use-case is described in <xref target="RFC8901" />.
 				</t>
 			</section>
 		</section>
@@ -214,7 +214,7 @@
 			<section anchor="centralized" numbered="true" toc="default">
 				<name>Centralized</name>
 				<t>
-					In a centralized model a controller executes all steps necessary 
+					In a centralized model a controller executes all steps necessary
 					and controls all signers.
 				</t>
 				<t>
@@ -254,7 +254,7 @@
 		<section anchor="algo" numbered="true" toc="default">
 			<name>Algorithms</name>
 			<t>
-				In a centralized model it is the controllers task to compute all waiting times and 
+				In a centralized model it is the controllers task to compute all waiting times and
 				control the zone in a way that all timing restrictions are met.
 			</t>
 			<t>
@@ -262,7 +262,7 @@
 				all timing restrictions.
 			</t>
 			<t>
-				In both methods it will be necessary that some of the timing restrictions must be given 
+				In both methods it will be necessary that some of the timing restrictions must be given
 				as part of the configuration data.
 			</t>
 			<section numbered="true" toc="default">
@@ -503,7 +503,7 @@
 				validate zone data with consistency.
 			</t>
 			<t>
-				This section tries to summarize why that is the case and what trade-offs can be 
+				This section tries to summarize why that is the case and what trade-offs can be
 				made in situations where using the same algorithm isn't possible.
 			</t>
 			<t>
