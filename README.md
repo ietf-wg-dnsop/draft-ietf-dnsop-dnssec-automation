@@ -2,4 +2,4 @@
 
 This is the working area for the Internet-Draft, "DNSSEC automation".
 
-* [Draft]([https://datatracker.ietf.org/doc/draft-wisser-dnssec-automation/](https://datatracker.ietf.org/doc/draft-ietf-dnsop-dnssec-automation/))
+* [Draft](https://datatracker.ietf.org/doc/draft-ietf-dnsop-dnssec-automation/)
