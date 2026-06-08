@@ -91,15 +91,13 @@
 			<t>
 				<xref target="RFC8901" /> describes the necessary steps and API for a
 				multi-signer DNSSEC configuration. In this document we will combine
-				<xref target="RFC8901" /> with <xref target="RFC8078" /> and
+				Model 2 of <xref target="RFC8901" /> with <xref target="RFC8078" /> and
 				<xref target="RFC7477" /> to define an automatable algorithm for
 				setting up, operating, and decommissioning a multi-signer
-				DNSSEC configuration.
-			</t>
-			<t>
-				One of the special cases of multi-signer DNSSEC is the secure
-				change of DNS operator. Multi-signer Model 2 enables secure
-				changes of the DNS operator.
+				DNSSEC configuration. Besides steady state multi-signer operation, one
+				of the special use cases of this protocol is to enable non-disruptive
+				migration of a signed DNS zone from one provider to another, which
+				employs a transitory state of a multi-signer configuration.
 			</t>
 			<section numbered="true" toc="default">
 				<name>Out-Of-Scope</name>
@@ -135,6 +133,12 @@
 			<t><strong>Parent</strong></t>
 			<t>See <xref target="RFC8499" /></t>
 			<t><strong>Trust mechanism</strong></t>
+			<t>
+				An authenticated channel used to apply control-plane changes
+				(DNSKEY, CDS/CDNSKEY, CSYNC, NS) on each signer, possibly
+				mediated by the zone owner or a controller. The detailed
+				mechanism is out of scope for this document.
+			</t>
 			<t><strong>DS-Wait-Time</strong></t>
 			<t>
 				Once the parent has picked up and published the new DS record
@@ -278,7 +282,7 @@
 						A working setup of the zone, including DNSSEC signing.
 					</li>
 					<li>
-						Uses the same algorithm for DNSSEC signing as the multi-signer
+						Uses the same algorithms for DNSSEC signing as the multi-signer
 						group uses or will use.
 					</li>
 					<li>
@@ -304,7 +308,7 @@
 					For full automation, both the KSK and ZSK (or CSK) must be online.
 				</t>
 				<t>
-					This is a special case: a multi-signer group with only one signer.
+					This can be viewed as an initial state where the multi-signer group has only one signer.
 				</t>
 			</section>
 			<section numbered="true" toc="default">
@@ -318,7 +322,7 @@
 						and the signer.
 					</li>
 					<li>
-						Add ZSK for each signer to all other signers.
+						Add ZSK for each signer to the DNSKEY RRsets of all the other signers.
 					</li>
 					<li>
 						Calculate CDS/CDNSKEY Records for all KSKs/CSKs represented
@@ -328,7 +332,7 @@
 						Configure all signers with the compiled CDS/CDNSKEY RRset.
 					</li>
 					<li>
-						Wait for Parent to publish the combined DS RRset.
+						Wait for Parent to publish the combined DS RRset, based on observation of the CDS/CDNSKEY RRsets.
 					</li>
 					<li>
 						Remove CDS/CDNSKEY Records from all signers. (optional)
@@ -349,7 +353,7 @@
 						set on all signers.
 					</li>
 					<li>
-						Wait for Parent to publish NS.
+						Wait for Parent to publish updates to the delegating NS RRset based on observation of the CSYNC RRsets.
 					</li>
 					<li>
 						Remove CSYNC record from all signers. (optional)
@@ -493,10 +497,6 @@
 					</li>
 				</ol>
 			</section>
-			<section>
-				<name>Timing Considerations</name>
-			</section>
-
 		</section>
 		<section>
 			<name>Signers with different algorithms in a multi-signer group</name>
@@ -565,7 +565,7 @@
 			</t>
 			<t>
 				Every step of the multi-signer algorithms has to be carefully executed at the right time.
-				Any failure could result in the loss of resolution for the domain.
+				Failures could result in the loss of resolution for the domain.
 			</t>
 			<t>
 				Independent of the chosen model, it is crucial that only authorized entities
@@ -574,8 +574,8 @@
 				zone data should be restricted as much as possible.
 			</t>
 			<t>
-				If used correctly, the multi-signer algorithm will strengthen the DNS security
-				by avoiding "going insecure" at any stage of the domain life cycle.
+				Multi-signer configurations can strengthen DNS security
+				by avoiding a DNS zone "going insecure" during a DNS operator transition. A steady state multi-signer configuration can also greatly strengthen availability by having multiple distinct DNS providers cooperatively serving the same signed zone. A catastrophic failure of any single provider then cannot take down the zone.
 			</t>
 		</section>
 		<section anchor="implementation" numbered="true" toc="default">
