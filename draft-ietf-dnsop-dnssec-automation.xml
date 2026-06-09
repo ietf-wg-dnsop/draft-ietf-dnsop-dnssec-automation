@@ -25,596 +25,596 @@
   sortRefs="true"
   version="3">
 
-	<!-- ***** FRONT MATTER ***** -->
+  <!-- ***** FRONT MATTER ***** -->
 
-	<front>
-		<title abbrev="DNSSEC automation">DNSSEC automation</title>
+  <front>
+    <title abbrev="DNSSEC automation">DNSSEC automation</title>
 
-		<author fullname="Ulrich Wisser" initials="U" surname="Wisser">
-			<organization>ICANN</organization>
-			<address>
-				<email>ulrich@wisser.se</email>
-			</address>
-		</author>
+    <author fullname="Ulrich Wisser" initials="U" surname="Wisser">
+      <organization>ICANN</organization>
+      <address>
+        <email>ulrich@wisser.se</email>
+      </address>
+    </author>
 
-		<author fullname="Shumon Huque" initials="S" surname="Huque">
-			<organization>Salesforce</organization>
-			<address>
-				<email>shuque@gmail.com</email>
-			</address>
-		</author>
+    <author fullname="Shumon Huque" initials="S" surname="Huque">
+      <organization>Salesforce</organization>
+      <address>
+        <email>shuque@gmail.com</email>
+      </address>
+    </author>
 
-		<author fullname="Johan Stenstam" initials="J" surname="Stenstam">
-			<organization>The Swedish Internet Foundation</organization>
-			<address>
-				<email>johan.stenstam@internetstiftelsen.se</email>
-			</address>
-		</author>
+    <author fullname="Johan Stenstam" initials="J" surname="Stenstam">
+      <organization>The Swedish Internet Foundation</organization>
+      <address>
+        <email>johan.stenstam@internetstiftelsen.se</email>
+      </address>
+    </author>
 
-		<date day="8" month="6" year="2026"/>
+    <date day="8" month="6" year="2026"/>
 
-		<area>Operations and Management Area</area>
-		<workgroup>Domain Name System Operations (dnsop)</workgroup>
+    <area>Operations and Management Area</area>
+    <workgroup>Domain Name System Operations (dnsop)</workgroup>
 
-		<keyword>DNS</keyword>
-		<keyword>DNSSEC</keyword>
-		<keyword>Multi-Signer</keyword>
-		<keyword>Automation</keyword>
+    <keyword>DNS</keyword>
+    <keyword>DNSSEC</keyword>
+    <keyword>Multi-Signer</keyword>
+    <keyword>Automation</keyword>
 
-		<abstract>
-			<t>
-				This document describes an algorithm and protocol to
-				automate the setup, operations, and decommissioning of
-				<xref target="RFC8901">Multi-Signer DNSSEC</xref>
-				configurations. To accomplish this, it employs Model 2 of
-				the multi-signer specification (where each operator has
-				their own distinct KSK and ZSK sets, or CSK sets), management
-				of DS records from the parent via
-				<xref target="RFC8078">CDS/CDNSKEY</xref>, and
-				<xref target="RFC7477">Child-to-Parent Synchronization in
-				DNS</xref>.
-			</t>
-		</abstract>
+    <abstract>
+      <t>
+        This document describes an algorithm and protocol to
+        automate the setup, operations, and decommissioning of
+        <xref target="RFC8901">Multi-Signer DNSSEC</xref>
+        configurations. To accomplish this, it employs Model 2 of
+        the multi-signer specification (where each operator has
+        their own distinct KSK and ZSK sets, or CSK sets), management
+        of DS records from the parent via
+        <xref target="RFC8078">CDS/CDNSKEY</xref>, and
+        <xref target="RFC7477">Child-to-Parent Synchronization in
+        DNS</xref>.
+      </t>
+    </abstract>
 
-		<note removeInRFC="true">
-		<name>Discussion Venues</name>
-		<t>
-			Source for this draft and an issue tracker can be found at
-			<eref target="https://github.com/ietf-wg-dnsop/draft-ietf-dnsop-dnssec-automation"/>.
-		</t>
-		</note>
+    <note removeInRFC="true">
+    <name>Discussion Venues</name>
+    <t>
+      Source for this draft and an issue tracker can be found at
+      <eref target="https://github.com/ietf-wg-dnsop/draft-ietf-dnsop-dnssec-automation"/>.
+    </t>
+    </note>
 
-	</front>
-	<middle>
-		<section numbered="true" toc="default">
-			<name>Introduction</name>
-			<t>
-				<xref target="RFC8901" /> describes the necessary steps and API for a
-				multi-signer DNSSEC configuration. In this document we will combine
-				Model 2 of <xref target="RFC8901" /> with <xref target="RFC8078" /> and
-				<xref target="RFC7477" /> to define an automatable algorithm for
-				setting up, operating, and decommissioning a multi-signer
-				DNSSEC configuration. Besides steady state multi-signer operation, one
-				of the special use cases of this protocol is to enable non-disruptive
-				migration of a signed DNS zone from one provider to another, which
-				employs a transitory state of a multi-signer configuration.
-			</t>
-			<section numbered="true" toc="default">
-				<name>Out-Of-Scope</name>
-				<t>
-					In order for any multi-signer group to give consistent answers
-					across all nameservers, the data contents of the zone also have to
-					be synchronized (in addition to infrastructure records like NS,
-					DNSKEY, CDS etc). This content synchronization is out-of-scope
-					for this document.
-				</t>
-			</section>
-		</section>
-		<section numbered="true" toc="default">
-			<name>Terminology</name>
-			<t>
-				The key words "<strong>MUST</strong>", "<strong>MUST NOT</strong>",
-				"<strong>REQUIRED</strong>", "<strong>SHALL</strong>", "<strong>SHALL NOT</strong>",
-				"<strong>SHOULD</strong>", "<strong>SHOULD NOT</strong>",
-				"<strong>RECOMMENDED</strong>", "<strong>MAY</strong>", and
-				"<strong>OPTIONAL</strong>" in this document are to be interpreted as
-				described in BCP 14	<xref target="RFC2119" /> <xref target="RFC8174" /> when,
-				and only when, they appear in all capitals, as shown here.
-			</t>
-			<t><strong>Signer</strong></t>
-			<t>An entity signing a zone</t>
-			<t><strong>Multi-signer Group</strong></t>
-			<t>A group of signers that sign the same zone</t>
-			<t><strong>Controller</strong></t>
-			<t>
-				An entity controlling the multi-signer group. Used in
-				the decentralized model.
-			</t>
-			<t><strong>Parent</strong></t>
-			<t>See <xref target="RFC8499" /></t>
-			<t><strong>Trust mechanism</strong></t>
-			<t>
-				An authenticated channel used to apply control-plane changes
-				(DNSKEY, CDS/CDNSKEY, CSYNC, NS) on each signer, possibly
-				mediated by the zone owner or a controller. The detailed
-				mechanism is out of scope for this document.
-			</t>
-			<t><strong>DS-Wait-Time</strong></t>
-			<t>
-				Once the parent has picked up and published the new DS record
-				set, any further changes MUST be delayed until the
-				new DS set has propagated.
-			</t>
-			<t>
-				The minimum DS-Wait-Time is the TTL of the DS RRset.
-			</t>
-			<t><strong>DNSKEY-Wait-Time</strong></t>
-			<t>
-				Once the DNSKEY sets of all signers are updated, any further changes
-				MUST be delayed until the new DNSKEY set has propagated.
-			</t>
-			<t>
-				The minimum DNSKEY-Wait-Time is the maximum of all DNSKEY TTL
-				values from all signers plus the time it takes to publish the zone on
-				all secondaries.
-			</t>
-			<t><strong>NS-Wait-Time</strong></t>
-			<t>
-				Once the parent has picked up and published the new NS record set,
-				any further changes MUST be delayed until the new NS set has
-				propagated.
-			</t>
-			<t>
-				The minimum NS-Wait-Time is the maximum of the TTL value of the
-				NS set in the parent zone and all NS sets from all signers.
-			</t>
-		</section>
-		<section numbered="true" toc="default">
-			<name>Use Cases</name>
-			<t>
-				As described in <xref target="RFC8901" /> a multi-signer DNSSEC
-				configuration has some challenges that can be overcome with the
-				right infrastructure and following a number of steps for setup
-				and operation.
-			</t>
-			<t>
-				In this document we describe, except for the initial trust, how
-				the steps in the multi-signer DNSSEC setup can be automated.
-			</t>
-			<section numbered="true" toc="default">
-				<name>Secure Nameserver Operator Transition</name>
-				<t>
-					Changing the nameserver operator of a DNSSEC signed zone can be
-					challenging. Currently the most common method is temporarily
-					"going insecure". This is poor for security, and for users
-					relying on the security of the zone. Furthermore, when DNSSEC
-					is being used for application security functions like DANE
-					<xref target="RFC6698" />, it is critical that the DNSSEC chain
-					of trust remain unbroken during the transfer.
-				</t>
-				<t>
-					Multi-signer DNSSEC Model 2 provides a mechanism for transitioning
-					from one nameserver operator to another without "going insecure".
-					A new operator joins the current operator in a temporary
-					multi-signer group. Once that is accomplished and stable, the old
-					operator leaves the multi-signer group, completing the transition.
-				</t>
-			</section>
-			<section numbered="true" toc="default">
-				<name>Permanent multi-signer operations</name>
-				<t>
-					Using multiple DNS providers to distribute authoritative DNS service
-					with each provider signing independently and with their own key set.
-					This use-case is described in <xref target="RFC8901" />.
-				</t>
-			</section>
-		</section>
-		<section anchor="automation" numbered="true" toc="default">
-			<name>Automation Models</name>
-			<t>
-				Automation of the necessary steps
-				can be categorized into two main models, centralized and decentralized.
-				Both have pros and cons, and a zone owner should carefully choose
+  </front>
+  <middle>
+    <section numbered="true" toc="default">
+      <name>Introduction</name>
+      <t>
+        <xref target="RFC8901" /> describes the necessary steps and API for a
+        multi-signer DNSSEC configuration. In this document we will combine
+        Model 2 of <xref target="RFC8901" /> with <xref target="RFC8078" /> and
+        <xref target="RFC7477" /> to define an automatable algorithm for
+        setting up, operating, and decommissioning a multi-signer
+        DNSSEC configuration. Besides steady state multi-signer operation, one
+        of the special use cases of this protocol is to enable non-disruptive
+        migration of a signed DNS zone from one provider to another, which
+        employs a transitory state of a multi-signer configuration.
+      </t>
+      <section numbered="true" toc="default">
+        <name>Out-Of-Scope</name>
+        <t>
+          In order for any multi-signer group to give consistent answers
+          across all nameservers, the data contents of the zone also have to
+          be synchronized (in addition to infrastructure records like NS,
+          DNSKEY, CDS etc). This content synchronization is out-of-scope
+          for this document.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="default">
+      <name>Terminology</name>
+      <t>
+        The key words "<strong>MUST</strong>", "<strong>MUST NOT</strong>",
+        "<strong>REQUIRED</strong>", "<strong>SHALL</strong>", "<strong>SHALL NOT</strong>",
+        "<strong>SHOULD</strong>", "<strong>SHOULD NOT</strong>",
+        "<strong>RECOMMENDED</strong>", "<strong>MAY</strong>", and
+        "<strong>OPTIONAL</strong>" in this document are to be interpreted as
+        described in BCP 14 <xref target="RFC2119" /> <xref target="RFC8174" /> when,
+        and only when, they appear in all capitals, as shown here.
+      </t>
+      <t><strong>Signer</strong></t>
+      <t>An entity signing a zone</t>
+      <t><strong>Multi-signer Group</strong></t>
+      <t>A group of signers that sign the same zone</t>
+      <t><strong>Controller</strong></t>
+      <t>
+        An entity controlling the multi-signer group. Used in
+        the decentralized model.
+      </t>
+      <t><strong>Parent</strong></t>
+      <t>See <xref target="RFC8499" /></t>
+      <t><strong>Trust mechanism</strong></t>
+      <t>
+        An authenticated channel used to apply control-plane changes
+        (DNSKEY, CDS/CDNSKEY, CSYNC, NS) on each signer, possibly
+        mediated by the zone owner or a controller. The detailed
+        mechanism is out of scope for this document.
+      </t>
+      <t><strong>DS-Wait-Time</strong></t>
+      <t>
+        Once the parent has picked up and published the new DS record
+        set, any further changes MUST be delayed until the
+        new DS set has propagated.
+      </t>
+      <t>
+        The minimum DS-Wait-Time is the TTL of the DS RRset.
+      </t>
+      <t><strong>DNSKEY-Wait-Time</strong></t>
+      <t>
+        Once the DNSKEY sets of all signers are updated, any further changes
+        MUST be delayed until the new DNSKEY set has propagated.
+      </t>
+      <t>
+        The minimum DNSKEY-Wait-Time is the maximum of all DNSKEY TTL
+        values from all signers plus the time it takes to publish the zone on
+        all secondaries.
+      </t>
+      <t><strong>NS-Wait-Time</strong></t>
+      <t>
+        Once the parent has picked up and published the new NS record set,
+        any further changes MUST be delayed until the new NS set has
+        propagated.
+      </t>
+      <t>
+        The minimum NS-Wait-Time is the maximum of the TTL value of the
+        NS set in the parent zone and all NS sets from all signers.
+      </t>
+    </section>
+    <section numbered="true" toc="default">
+      <name>Use Cases</name>
+      <t>
+        As described in <xref target="RFC8901" /> a multi-signer DNSSEC
+        configuration has some challenges that can be overcome with the
+        right infrastructure and following a number of steps for setup
+        and operation.
+      </t>
+      <t>
+        In this document we describe, except for the initial trust, how
+        the steps in the multi-signer DNSSEC setup can be automated.
+      </t>
+      <section numbered="true" toc="default">
+        <name>Secure Nameserver Operator Transition</name>
+        <t>
+          Changing the nameserver operator of a DNSSEC signed zone can be
+          challenging. Currently the most common method is temporarily
+          "going insecure". This is poor for security, and for users
+          relying on the security of the zone. Furthermore, when DNSSEC
+          is being used for application security functions like DANE
+          <xref target="RFC6698" />, it is critical that the DNSSEC chain
+          of trust remain unbroken during the transfer.
+        </t>
+        <t>
+          Multi-signer DNSSEC Model 2 provides a mechanism for transitioning
+          from one nameserver operator to another without "going insecure".
+          A new operator joins the current operator in a temporary
+          multi-signer group. Once that is accomplished and stable, the old
+          operator leaves the multi-signer group, completing the transition.
+        </t>
+      </section>
+      <section numbered="true" toc="default">
+        <name>Permanent multi-signer operations</name>
+        <t>
+          Using multiple DNS providers to distribute authoritative DNS service
+          with each provider signing independently and with their own key set.
+          This use-case is described in <xref target="RFC8901" />.
+        </t>
+      </section>
+    </section>
+    <section anchor="automation" numbered="true" toc="default">
+      <name>Automation Models</name>
+      <t>
+        Automation of the necessary steps
+        can be categorized into two main models, centralized and decentralized.
+        Both have pros and cons, and a zone owner should carefully choose
                 the model that works best.
-			</t>
-			<section anchor="centralized" numbered="true" toc="default">
-				<name>Centralized</name>
-				<t>
-					In a centralized model a controller executes all steps necessary
-					and controls all signers.
-				</t>
-				<t>
-					The controller needs to have authorized access to all signers.
-					This can be achieved in a variety of different ways. For example, many
-					service providers offer access through a REST API. Another possibility
-					is access through Dynamic Update <xref target="RFC2136" /> with TSIG authentication.
-				</t>
-			</section>
-			<section anchor="decentralized" numbered="true" toc="default">
-				<name>Decentralized</name>
-				<t>
-					In the decentralized model all signers communicate with
-					each other and execute the necessary steps on their own
-					instance. For this, signers need a specialized protocol to
-					communicate configuration details that are not part of
-					the zone data.
-				</t>
-			</section>
-			<section anchor="capabilities" numbered="true" toc="default">
-				<name>Capabilities</name>
-				<t>
-					In order for any of the models to work, the signer must
-					support the following capabilities.
-				</t>
-				<ol>
-					<li>Add DNSKEY records (without the private key)</li>
-					<li>Remove (previously added) DNSKEY record(s)</li>
-					<li>Add CDS and CDNSKEY records for keys not in the DNSKEY set</li>
-					<li>Remove (previously added) CDS and CDNSKEY records</li>
-					<li>Add CSYNC record</li>
-					<li>Remove CSYNC record</li>
-				</ol>
-			</section>
+      </t>
+      <section anchor="centralized" numbered="true" toc="default">
+        <name>Centralized</name>
+        <t>
+          In a centralized model a controller executes all steps necessary
+          and controls all signers.
+        </t>
+        <t>
+          The controller needs to have authorized access to all signers.
+          This can be achieved in a variety of different ways. For example, many
+          service providers offer access through a REST API. Another possibility
+          is access through Dynamic Update <xref target="RFC2136" /> with TSIG authentication.
+        </t>
+      </section>
+      <section anchor="decentralized" numbered="true" toc="default">
+        <name>Decentralized</name>
+        <t>
+          In the decentralized model all signers communicate with
+          each other and execute the necessary steps on their own
+          instance. For this, signers need a specialized protocol to
+          communicate configuration details that are not part of
+          the zone data.
+        </t>
+      </section>
+      <section anchor="capabilities" numbered="true" toc="default">
+        <name>Capabilities</name>
+        <t>
+          In order for any of the models to work, the signer must
+          support the following capabilities.
+        </t>
+        <ol>
+          <li>Add DNSKEY records (without the private key)</li>
+          <li>Remove (previously added) DNSKEY record(s)</li>
+          <li>Add CDS and CDNSKEY records for keys not in the DNSKEY set</li>
+          <li>Remove (previously added) CDS and CDNSKEY records</li>
+          <li>Add CSYNC record</li>
+          <li>Remove CSYNC record</li>
+        </ol>
+      </section>
 
-		</section>
-		<section anchor="algo" numbered="true" toc="default">
-			<name>Algorithms</name>
-			<t>
-				In a centralized model it is the controller's task to compute all waiting times and
-				control the zone in a way that all timing restrictions are met.
-			</t>
-			<t>
-				In the decentralized model every signer must compute all waiting times and adhere to
-				all timing restrictions.
-			</t>
-			<t>
-				In both methods, some of the timing restrictions must be specified
-				as part of the configuration data.
-			</t>
-			<section numbered="true" toc="default">
-				<name>Prerequisites</name>
-				<t>Each signer to be added, including the initial signer, must
-					meet the following prerequisites before joining the multi-signer
-					group:
-				</t>
-				<ol>
-					<li>
-						A working setup of the zone, including DNSSEC signing.
-					</li>
-					<li>
-						Uses the same algorithms for DNSSEC signing as the multi-signer
-						group uses or will use.
-					</li>
-					<li>
-						Signer or controller must be able to differentiate between its own keys and
-						keys from other signers.
-					</li>
-					<li>
-						Signer or controller must be able to differentiate between NS records that
-						are updated by itself and NS
-						records that receive updates from other signers.
-					</li>
-					<li>
-						If the domain is not covered by a CDS/CDNSKEY scanner and a
-						CSYNC scanner, updates to the parent zone have to be
-						made manually.
-					</li>
-				</ol>
-			</section>
-			<section numbered="true" toc="default">
-				<name>Setting up a new multi-signer group</name>
-				<t>
-					The zone is already authoritatively served by one DNS operator and is DNSSEC signed.
-					For full automation, both the KSK and ZSK (or CSK) must be online.
-				</t>
-				<t>
-					This can be viewed as an initial state where the multi-signer group has only one signer.
-				</t>
-			</section>
-			<section numbered="true" toc="default">
-				<name>A signer joins the multi-signer group</name>
-				<ol spacing="normal">
-					<li>
-						Confirm that the incoming signer meets the prerequisites.
-					</li>
-					<li>
-						Establish a trust mechanism between the multi-signer group
-						and the signer.
-					</li>
-					<li>
-						Add ZSK for each signer to the DNSKEY RRsets of all the other signers.
-					</li>
-					<li>
-						Calculate CDS/CDNSKEY Records for all KSKs/CSKs represented
-						in the multi-signer group.
-					</li>
-					<li>
-						Configure all signers with the compiled CDS/CDNSKEY RRset.
-					</li>
-					<li>
-						Wait for Parent to publish the combined DS RRset, based on observation of the CDS/CDNSKEY RRsets.
-					</li>
-					<li>
-						Remove CDS/CDNSKEY Records from all signers. (optional)
-					</li>
-					<li>
-						Wait for the maximum of DS-Wait-Time and DNSKEY-Wait-Time.
-					</li>
-					<li>
-						Compile NS RRset including all NS records from all
-						signers.
-					</li>
-					<li>
-						Configure all signers with the compiled NS RRset.
-					</li>
-					<li>
-						Compare NS RRset of the signers to the Parent. If there is a
-						difference, publish a CSYNC record with the NS, A, and AAAA bits
-						set on all signers.
-					</li>
-					<li>
-						Wait for Parent to publish updates to the delegating NS RRset based on observation of the CSYNC RRsets.
-					</li>
-					<li>
-						Remove CSYNC record from all signers. (optional)
-					</li>
-				</ol>
-			</section>
-			<section numbered="true" toc="default">
-				<name>A signer leaves the multi-signer group</name>
-				<ol spacing="normal">
-					<li>
-						Remove exiting signer's NS records from remaining signers
-					</li>
-					<li>
-						Compare NS RRset of the signers to the Parent. If there
-						is a difference, publish a CSYNC record with the NS, A, and AAAA
-						bits set on the remaining signers.
-					</li>
-					<li>
-						Wait for Parent to publish NS RRset.
-					</li>
-					<li>
-						Remove CSYNC record from all signers. (optional)
-					</li>
-					<li>
-						Wait for NS-Wait-Time.
-					</li>
-					<li>
-						Stop the exiting signer from answering queries.
-					</li>
-					<li>
-						Calculate CDS/CDNSKEY Records for KSKs/CSKs published by
-						the remaining signers.
-					</li>
-					<li>
-						Configure remaining signers with the compiled
-						CDS/CDNSKEY RRset.
-					</li>
-					<li>
-						Remove ZSK/CSK of the exiting signer from remaining signers.
-					</li>
-					<li>
-						Wait for Parent to publish the updated DS RRset.
-					</li>
-					<li>
-						Remove CDS/CDNSKEY set from all signers. (Optional)
-					</li>
-				</ol>
-			</section>
-			<section>
-				<name>A signer performs a ZSK rollover</name>
-				<ol>
-					<li>
-						The signer introduces the new ZSK in its own DNSKEY RRset.
-					</li>
-					<li>
-						Update all signers with the new ZSK.
-					</li>
-					<li>
-						Wait for DNSKEY-Wait-Time.
-					</li>
-					<li>
-						Signer can start using the new ZSK.
-					</li>
-					<li>
-						When the old ZSK is not used in any signatures by the signer,
-						the signer can remove the old ZSK from its DNSKEY RRset.
-					</li>
-					<li>
-						Remove ZSK from DNSKEY RRset of all signers.
-					</li>
-				</ol>
-			</section>
-			<section>
-				<name>A signer performs a CSK or KSK rollover</name>
-				<ol>
-					<li>
-						Signer publishes new CSK / KSK in its own DNSKEY RRset.
-					</li>
-					<li>
-						In the case of a CSK, add CSK to DNSKEY set of all other signers.
-					</li>
-					<li>
-						Signer signs DNSKEY RRset with old and new CSK / KSK.
-					</li>
-					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers.
-					</li>
-					<li>
-						Wait for Parent to pick up and publish the new DS RRset.
-					</li>
-					<li>
-						Wait for DS-Wait-Time + DNSKEY-Wait-Time.
-					</li>
-					<li>
-						Signer removes old CSK/KSK from its DNSKEY RRset, and removes all
-						signatures made with this key.
-					</li>
-					<li>
-						In the case of a CSK, remove old CSK from DNSKEY set of all other signers.
-					</li>
-					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers.
-					</li>
-					<li>
-						Wait for Parent to pick up and publish the new DS RRset.
-					</li>
-					<li>
-						Remove CDS/CDNSKEY RRsets from all signers.
-					</li>
-				</ol>
-			</section>
-			<section>
-				<name>Algorithm rollover for the whole multi-signer group</name>
-				<ol>
-					<li>All signers publish KSK and ZSK or CSK using the new algorithm.</li>
-					<li>All signers sign all zone data with the new keys.</li>
-					<li>Wait until all signers have signed all data with the new key(s).</li>
-					<li>
-						Add new ZSK of each signer to all other signers.
-					</li>
-					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers.
-					</li>
-					<li>
-						Wait for Parent to pick up and publish the new DS RRset.
-					</li>
-					<li>
-						Wait for DS-Wait-Time + DNSKEY-Wait-Time.
-					</li>
-					<li>
-						Remove all keys and signatures that use the old algorithm.
-					</li>
-					<li>
-						Calculate new CDS/CDNSKEY RRset and publish on all signers.
-					</li>
-					<li>
-						Wait for Parent to pick up and publish the new DS RRset.
-					</li>
-					<li>
-						Remove CDS/CDNSKEY RRsets from all signers.
-					</li>
-				</ol>
-			</section>
-		</section>
-		<section>
-			<name>Signers with different algorithms in a multi-signer group</name>
-			<t>
-				Only when all signers use the same algorithm(s) can all resolvers
-				validate zone data with consistency.
-			</t>
-			<t>
-				This section tries to summarize why that is the case and what trade-offs can be
-				made in situations where using the same algorithm isn't possible.
-			</t>
-			<t>
-				<xref target="RFC4035" section="2.2"/> states that
-				a signed zone MUST include a DNSKEY for each algorithm present in
-				the zone's DS RRset and expected trust anchors for the zone.
-				A setup where different signers use different key algorithms therefore
-				violates <xref target="RFC4035" />.
-			</t>
-			<t>
-				According to <xref target="RFC6840" section="5.11" />
-				validators SHOULD NOT insist that all algorithms signaled in the
-				DS RRset work, and they MUST NOT insist that all algorithms signaled
-				in the DNSKEY RRset work.
-			</t>
-			<t>
-				So a multi-signer setup where different signers use different key
-				algorithms should still validate.
-			</t>
-			<t>
-				This could be an acceptable risk in situations where going insecure
-				is undesirable or impossible, and nameservers must be changed
-				between operators that only support disjoint sets of key algorithms.
-			</t>
-			<t>
-				We have to consider the following scenarios:
-			</t>
-			<t><strong>Validator supports both algorithms</strong></t>
-			<t>
-				Validation should be stable through all stages of the multi-signer
-				algorithms.
-			</t>
-			<t><strong>Validator supports none of the algorithms</strong></t>
-			<t>
-				The validator will treat the zone as unsigned. Resolution should
-				work through all stages of the multi-signer algorithms.
-			</t>
-			<t><strong>Validator supports only one of the algorithms</strong></t>
-			<t>
-				The validator will not be able to validate the DNSKEY RRset or
-				any data from one of the signers. So in some cases the validator
-				will consider the zone bogus and reply with a SERVFAIL response code.
-			</t>
-			<t>
-				The latter scenario can be mitigated, but not fully eliminated, by
-				selecting two well-supported algorithms.
-			</t>
-		</section>
-		<section anchor="IANA" numbered="true" toc="default">
-			<name>IANA Considerations</name>
-			<t>This document has no IANA actions.</t>
-		</section>
-		<section anchor="Security" numbered="true" toc="default">
-			<name>Security Considerations</name>
-			<t>
-			    multi-signer DNSSEC inherits the security considerations of <xref target="RFC7477" />, <xref target="RFC8078" /> and <xref target="RFC8901"/>.
-			</t>
-			<t>
-				Every step of the multi-signer algorithms has to be carefully executed at the right time.
-				Failures could result in the loss of resolution for the domain.
-			</t>
-			<t>
-				Independent of the chosen model, it is crucial that only authorized entities
-				are able to change the zone data. Some providers or software installations allow
-				finer-grained configuration of which changes are permitted. Access to modify
-				zone data should be restricted as much as possible.
-			</t>
-			<t>
-				Multi-signer configurations can strengthen DNS security
-				by avoiding a DNS zone "going insecure" during a DNS operator transition. A steady state multi-signer configuration can also greatly strengthen availability by having multiple distinct DNS providers cooperatively serving the same signed zone. A catastrophic failure of any single provider then cannot take down the zone.
-			</t>
-		</section>
-		<section anchor="implementation" numbered="true" toc="default">
-			<name>Implementation Status</name>
-			<t>
-				The Swedish Internet Foundation has implemented a centralized
-				controller that supports updates via Dynamic DNS or the REST APIs
-				of several vendors.
-			</t>
-			<t>
-				The code can be found as part of the multi-signer project on GitHub
-				<eref target="https://github.com/DNSSEC-Provisioning/multi-signer-controller" />
-			</t>
-		</section>
-	</middle>
-	<back>
-		<references title="Normative References">
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4035.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6840.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7477.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8078.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8499.xml"/>
-		</references>
-		<references title="Informative References">
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
-			<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
-		</references>
+    </section>
+    <section anchor="algo" numbered="true" toc="default">
+      <name>Algorithms</name>
+      <t>
+        In a centralized model it is the controller's task to compute all waiting times and
+        control the zone in a way that all timing restrictions are met.
+      </t>
+      <t>
+        In the decentralized model every signer must compute all waiting times and adhere to
+        all timing restrictions.
+      </t>
+      <t>
+        In both methods, some of the timing restrictions must be specified
+        as part of the configuration data.
+      </t>
+      <section numbered="true" toc="default">
+        <name>Prerequisites</name>
+        <t>Each signer to be added, including the initial signer, must
+          meet the following prerequisites before joining the multi-signer
+          group:
+        </t>
+        <ol>
+          <li>
+            A working setup of the zone, including DNSSEC signing.
+          </li>
+          <li>
+            Uses the same algorithms for DNSSEC signing as the multi-signer
+            group uses or will use.
+          </li>
+          <li>
+            Signer or controller must be able to differentiate between its own keys and
+            keys from other signers.
+          </li>
+          <li>
+            Signer or controller must be able to differentiate between NS records that
+            are updated by itself and NS
+            records that receive updates from other signers.
+          </li>
+          <li>
+            If the domain is not covered by a CDS/CDNSKEY scanner and a
+            CSYNC scanner, updates to the parent zone have to be
+            made manually.
+          </li>
+        </ol>
+      </section>
+      <section numbered="true" toc="default">
+        <name>Setting up a new multi-signer group</name>
+        <t>
+          The zone is already authoritatively served by one DNS operator and is DNSSEC signed.
+          For full automation, both the KSK and ZSK (or CSK) must be online.
+        </t>
+        <t>
+          This can be viewed as an initial state where the multi-signer group has only one signer.
+        </t>
+      </section>
+      <section numbered="true" toc="default">
+        <name>A signer joins the multi-signer group</name>
+        <ol spacing="normal">
+          <li>
+            Confirm that the incoming signer meets the prerequisites.
+          </li>
+          <li>
+            Establish a trust mechanism between the multi-signer group
+            and the signer.
+          </li>
+          <li>
+            Add ZSK for each signer to the DNSKEY RRsets of all the other signers.
+          </li>
+          <li>
+            Calculate CDS/CDNSKEY Records for all KSKs/CSKs represented
+            in the multi-signer group.
+          </li>
+          <li>
+            Configure all signers with the compiled CDS/CDNSKEY RRset.
+          </li>
+          <li>
+            Wait for Parent to publish the combined DS RRset, based on observation of the CDS/CDNSKEY RRsets.
+          </li>
+          <li>
+            Remove CDS/CDNSKEY Records from all signers. (optional)
+          </li>
+          <li>
+            Wait for the maximum of DS-Wait-Time and DNSKEY-Wait-Time.
+          </li>
+          <li>
+            Compile NS RRset including all NS records from all
+            signers.
+          </li>
+          <li>
+            Configure all signers with the compiled NS RRset.
+          </li>
+          <li>
+            Compare NS RRset of the signers to the Parent. If there is a
+            difference, publish a CSYNC record with the NS, A, and AAAA bits
+            set on all signers.
+          </li>
+          <li>
+            Wait for Parent to publish updates to the delegating NS RRset based on observation of the CSYNC RRsets.
+          </li>
+          <li>
+            Remove CSYNC record from all signers. (optional)
+          </li>
+        </ol>
+      </section>
+      <section numbered="true" toc="default">
+        <name>A signer leaves the multi-signer group</name>
+        <ol spacing="normal">
+          <li>
+            Remove exiting signer's NS records from remaining signers
+          </li>
+          <li>
+            Compare NS RRset of the signers to the Parent. If there
+            is a difference, publish a CSYNC record with the NS, A, and AAAA
+            bits set on the remaining signers.
+          </li>
+          <li>
+            Wait for Parent to publish NS RRset.
+          </li>
+          <li>
+            Remove CSYNC record from all signers. (optional)
+          </li>
+          <li>
+            Wait for NS-Wait-Time.
+          </li>
+          <li>
+            Stop the exiting signer from answering queries.
+          </li>
+          <li>
+            Calculate CDS/CDNSKEY Records for KSKs/CSKs published by
+            the remaining signers.
+          </li>
+          <li>
+            Configure remaining signers with the compiled
+            CDS/CDNSKEY RRset.
+          </li>
+          <li>
+            Remove ZSK/CSK of the exiting signer from remaining signers.
+          </li>
+          <li>
+            Wait for Parent to publish the updated DS RRset.
+          </li>
+          <li>
+            Remove CDS/CDNSKEY set from all signers. (Optional)
+          </li>
+        </ol>
+      </section>
+      <section>
+        <name>A signer performs a ZSK rollover</name>
+        <ol>
+          <li>
+            The signer introduces the new ZSK in its own DNSKEY RRset.
+          </li>
+          <li>
+            Update all signers with the new ZSK.
+          </li>
+          <li>
+            Wait for DNSKEY-Wait-Time.
+          </li>
+          <li>
+            Signer can start using the new ZSK.
+          </li>
+          <li>
+            When the old ZSK is not used in any signatures by the signer,
+            the signer can remove the old ZSK from its DNSKEY RRset.
+          </li>
+          <li>
+            Remove ZSK from DNSKEY RRset of all signers.
+          </li>
+        </ol>
+      </section>
+      <section>
+        <name>A signer performs a CSK or KSK rollover</name>
+        <ol>
+          <li>
+            Signer publishes new CSK / KSK in its own DNSKEY RRset.
+          </li>
+          <li>
+            In the case of a CSK, add CSK to DNSKEY set of all other signers.
+          </li>
+          <li>
+            Signer signs DNSKEY RRset with old and new CSK / KSK.
+          </li>
+          <li>
+            Calculate new CDS/CDNSKEY RRset and publish on all signers.
+          </li>
+          <li>
+            Wait for Parent to pick up and publish the new DS RRset.
+          </li>
+          <li>
+            Wait for DS-Wait-Time + DNSKEY-Wait-Time.
+          </li>
+          <li>
+            Signer removes old CSK/KSK from its DNSKEY RRset, and removes all
+            signatures made with this key.
+          </li>
+          <li>
+            In the case of a CSK, remove old CSK from DNSKEY set of all other signers.
+          </li>
+          <li>
+            Calculate new CDS/CDNSKEY RRset and publish on all signers.
+          </li>
+          <li>
+            Wait for Parent to pick up and publish the new DS RRset.
+          </li>
+          <li>
+            Remove CDS/CDNSKEY RRsets from all signers.
+          </li>
+        </ol>
+      </section>
+      <section>
+        <name>Algorithm rollover for the whole multi-signer group</name>
+        <ol>
+          <li>All signers publish KSK and ZSK or CSK using the new algorithm.</li>
+          <li>All signers sign all zone data with the new keys.</li>
+          <li>Wait until all signers have signed all data with the new key(s).</li>
+          <li>
+            Add new ZSK of each signer to all other signers.
+          </li>
+          <li>
+            Calculate new CDS/CDNSKEY RRset and publish on all signers.
+          </li>
+          <li>
+            Wait for Parent to pick up and publish the new DS RRset.
+          </li>
+          <li>
+            Wait for DS-Wait-Time + DNSKEY-Wait-Time.
+          </li>
+          <li>
+            Remove all keys and signatures that use the old algorithm.
+          </li>
+          <li>
+            Calculate new CDS/CDNSKEY RRset and publish on all signers.
+          </li>
+          <li>
+            Wait for Parent to pick up and publish the new DS RRset.
+          </li>
+          <li>
+            Remove CDS/CDNSKEY RRsets from all signers.
+          </li>
+        </ol>
+      </section>
+    </section>
+    <section>
+      <name>Signers with different algorithms in a multi-signer group</name>
+      <t>
+        Only when all signers use the same algorithm(s) can all resolvers
+        validate zone data with consistency.
+      </t>
+      <t>
+        This section tries to summarize why that is the case and what trade-offs can be
+        made in situations where using the same algorithm isn't possible.
+      </t>
+      <t>
+        <xref target="RFC4035" section="2.2"/> states that
+        a signed zone MUST include a DNSKEY for each algorithm present in
+        the zone's DS RRset and expected trust anchors for the zone.
+        A setup where different signers use different key algorithms therefore
+        violates <xref target="RFC4035" />.
+      </t>
+      <t>
+        According to <xref target="RFC6840" section="5.11" />
+        validators SHOULD NOT insist that all algorithms signaled in the
+        DS RRset work, and they MUST NOT insist that all algorithms signaled
+        in the DNSKEY RRset work.
+      </t>
+      <t>
+        So a multi-signer setup where different signers use different key
+        algorithms should still validate.
+      </t>
+      <t>
+        This could be an acceptable risk in situations where going insecure
+        is undesirable or impossible, and nameservers must be changed
+        between operators that only support disjoint sets of key algorithms.
+      </t>
+      <t>
+        We have to consider the following scenarios:
+      </t>
+      <t><strong>Validator supports both algorithms</strong></t>
+      <t>
+        Validation should be stable through all stages of the multi-signer
+        algorithms.
+      </t>
+      <t><strong>Validator supports none of the algorithms</strong></t>
+      <t>
+        The validator will treat the zone as unsigned. Resolution should
+        work through all stages of the multi-signer algorithms.
+      </t>
+      <t><strong>Validator supports only one of the algorithms</strong></t>
+      <t>
+        The validator will not be able to validate the DNSKEY RRset or
+        any data from one of the signers. So in some cases the validator
+        will consider the zone bogus and reply with a SERVFAIL response code.
+      </t>
+      <t>
+        The latter scenario can be mitigated, but not fully eliminated, by
+        selecting two well-supported algorithms.
+      </t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="default">
+      <name>IANA Considerations</name>
+      <t>This document has no IANA actions.</t>
+    </section>
+    <section anchor="Security" numbered="true" toc="default">
+      <name>Security Considerations</name>
+      <t>
+        Multi-signer DNSSEC inherits the security considerations of <xref target="RFC7477" />, <xref target="RFC8078" /> and <xref target="RFC8901"/>.
+      </t>
+      <t>
+        Every step of the multi-signer algorithms has to be carefully executed at the right time.
+        Failures could result in the loss of resolution for the domain.
+      </t>
+      <t>
+        Independent of the chosen model, it is crucial that only authorized entities
+        are able to change the zone data. Some providers or software installations allow
+        finer-grained configuration of which changes are permitted. Access to modify
+        zone data should be restricted as much as possible.
+      </t>
+      <t>
+        Multi-signer configurations can strengthen DNS security
+        by avoiding a DNS zone "going insecure" during a DNS operator transition. A steady state multi-signer configuration can also greatly strengthen availability by having multiple distinct DNS providers cooperatively serving the same signed zone. A catastrophic failure of any single provider then cannot take down the zone.
+      </t>
+    </section>
+    <section anchor="implementation" numbered="true" toc="default">
+      <name>Implementation Status</name>
+      <t>
+        The Swedish Internet Foundation has implemented a centralized
+        controller that supports updates via Dynamic DNS or the REST APIs
+        of several vendors.
+      </t>
+      <t>
+        The code can be found as part of the multi-signer project on GitHub
+        <eref target="https://github.com/DNSSEC-Provisioning/multi-signer-controller" />
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references title="Normative References">
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4035.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6840.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7477.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8078.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8499.xml"/>
+    </references>
+    <references title="Informative References">
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
+    </references>
 
-		<section anchor="Acknowledgements" numbered="true" toc="default">
-			<name>Acknowledgements</name>
-			<t>
-				The authors would like to thank the following for their review of
-				this work and their valuable comments: Steve Crocker, Eric Osterweil,
-				Roger Murray, Jonas Andersson, Peter Thomassen.
-			</t>
-		</section>
+    <section anchor="Acknowledgements" numbered="true" toc="default">
+      <name>Acknowledgements</name>
+      <t>
+        The authors would like to thank the following for their review of
+        this work and their valuable comments: Steve Crocker, Eric Osterweil,
+        Roger Murray, Jonas Andersson, Peter Thomassen.
+      </t>
+    </section>
 
-	</back>
+  </back>
 </rfc>
