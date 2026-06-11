@@ -172,17 +172,19 @@
     <section numbered="true" toc="default">
       <name>Use Cases</name>
       <t>
-        As described in <xref target="RFC8901" /> a multi-signer DNSSEC
-        configuration has some challenges that can be overcome with the
-        right infrastructure and following a number of steps for setup
-        and operation.
-      </t>
-      <t>
-        In this document we describe, except for the initial trust, how
-        the steps in the multi-signer DNSSEC setup can be automated.
+        The following two use cases are in the scope of this document.
       </t>
       <section numbered="true" toc="default">
-        <name>Secure Nameserver Operator Transition</name>
+        <name>Permanent multi-signer operation</name>
+        <t>
+          This is the typical use case described in <xref target="RFC8901"/>,
+          where multiple DNS providers are used to cooperatively serve a DNS
+          zone, each signing independently with their own keys, in a steady
+          state configuration to increase availability.
+        </t>
+      </section>
+      <section numbered="true" toc="default">
+        <name>Secure DNS Operator Transition</name>
         <t>
           Changing the nameserver operator of a DNSSEC signed zone can be
           challenging. Currently the most common method is temporarily
@@ -200,14 +202,6 @@
           operator leaves the multi-signer group, completing the transition.
         </t>
       </section>
-      <section numbered="true" toc="default">
-        <name>Permanent multi-signer operations</name>
-        <t>
-          Using multiple DNS providers to distribute authoritative DNS service
-          with each provider signing independently and with their own key set.
-          This use-case is described in <xref target="RFC8901" />.
-        </t>
-      </section>
     </section>
     <section anchor="automation" numbered="true" toc="default">
       <name>Automation Models</name>
@@ -215,7 +209,7 @@
         Automation of the necessary steps
         can be categorized into two main models, centralized and decentralized.
         Both have pros and cons, and a zone owner should carefully choose
-                the model that works best.
+        the model that works best.
       </t>
       <section anchor="centralized" numbered="true" toc="default">
         <name>Centralized</name>
@@ -295,9 +289,12 @@
             records that receive updates from other signers.
           </li>
           <li>
-            If the domain is not covered by a CDS/CDNSKEY scanner and a
-            CSYNC scanner, updates to the parent zone have to be
-            made manually.
+            Typically automated updates to the DS and NS records in the
+            parent zone require the parent zone to employ scanning of the
+            CDS/CDNSKEY/CSYNC records in its child zones. Alternatively, the
+            use of the <xref target="RFC9859">Generalized NOTIFY</xref>
+            mechanism could be employed. If neither of these options are
+            available, updates to the parent zone need to be made manually.
           </li>
         </ol>
       </section>
@@ -546,12 +543,14 @@
       <t><strong>Validator supports only one of the algorithms</strong></t>
       <t>
         The validator will not be able to validate the DNSKEY RRset or
-        any data from one of the signers. So in some cases the validator
-        will consider the zone bogus and reply with a SERVFAIL response code.
+        any data from one of the signers, and will typically retry other
+        nameservers for the zone until it can find another signer that it
+        does recognize, or return a SERVFAIL response code otherwise.
       </t>
       <t>
-        The latter scenario can be mitigated, but not fully eliminated, by
-        selecting two well-supported algorithms.
+        The latter scenario can be mitigated, by selecting only well-supported
+        algorithms. <xref target="MULTI-ALG-RULES" /> proposes to formally define
+        such "universal" algorithms and sanction such configurations.
       </t>
     </section>
     <section anchor="IANA" numbered="true" toc="default">
@@ -605,6 +604,19 @@
     <references title="Informative References">
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8901.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.9859.xml"/>
+      <reference anchor="MULTI-ALG-RULES"
+                 target="https://datatracker.ietf.org/doc/html/draft-huque-dnsop-multi-alg-rules">
+        <front>
+          <title>Multiple Algorithm Rules in DNSSEC</title>
+          <author fullname="Shumon Huque" initials="S" surname="Huque" />
+          <author fullname="Peter Thomassen" initials="P" surname="Thomassen" />
+          <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
+          <author fullname="Duane Wessels" initials="D" surname="Wessels" />
+          <author fullname="Christian Elmerot" initials="C" surname="Elmerot" />
+          <date />
+        </front>
+      </reference>
     </references>
 
     <section anchor="Acknowledgements" numbered="true" toc="default">
