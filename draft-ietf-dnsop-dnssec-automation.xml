@@ -51,7 +51,7 @@
       </address>
     </author>
 
-    <date day="8" month="6" year="2026"/>
+    <date day="12" month="6" year="2026"/>
 
     <area>Operations and Management Area</area>
     <workgroup>Domain Name System Operations (dnsop)</workgroup>
@@ -172,10 +172,14 @@
     <section numbered="true" toc="default">
       <name>Use Cases</name>
       <t>
+        In this document we describe, except for the initial trust, how
+        the steps in the multi-signer DNSSEC setup can be automated.
+      </t>
+      <t>
         The following two use cases are in the scope of this document.
       </t>
       <section numbered="true" toc="default">
-        <name>Permanent multi-signer operation</name>
+        <name>Permanent Multi-Signer Operation</name>
         <t>
           This is the typical use case described in <xref target="RFC8901"/>,
           where multiple DNS providers are used to cooperatively serve a DNS
@@ -293,7 +297,7 @@
             parent zone require the parent zone to employ scanning of the
             CDS/CDNSKEY/CSYNC records in its child zones. Alternatively, the
             use of the <xref target="RFC9859">Generalized NOTIFY</xref>
-            mechanism could be employed. If neither of these options are
+            mechanism could be employed. If neither of these options is
             available, updates to the parent zone need to be made manually.
           </li>
         </ol>
@@ -548,7 +552,7 @@
         does recognize, or return a SERVFAIL response code otherwise.
       </t>
       <t>
-        The latter scenario can be mitigated, by selecting only well-supported
+        The latter scenario can be mitigated by selecting only well-supported
         algorithms. <xref target="MULTI-ALG-RULES" /> proposes to formally define
         such "universal" algorithms and sanction such configurations.
       </t>
